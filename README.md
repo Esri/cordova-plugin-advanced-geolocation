@@ -135,7 +135,7 @@ Option | Type | Description
 `useCache` | boolean | Will return cached values from any active location provider. While not gauranteed, both GPS and NETWORK providers have a cache.
 `satelliteData` | boolean | If `true` it returns all available satellite data from the GPS receiver. Requires that the `gps` provider is also enabled. <br><br>**CAUTION:** Activating satellite data will increase CPU and memory usage. 
 `buffer` | boolean | If `true` it will start a buffer that returns the averaged geometric center. Use this when requirements call for determining a single, best location. The buffer uses a FIFO ordering, so new values added and old values are removed. 
-`bufferSize` | integer | The maximum number of elements allowed within the buffer. It's strongly recommended to use as small of a buffer size as possible to minimize memory usage and garbage collection. Experiment to see what works best This property will be ignored if `buffer` is set to `false`. Buffers larger than 30 elements may not be necessary.<br><br>**CAUTION:** Increasing the buffer size will increase CPU and memory usage. 
+`bufferSize` | integer | The maximum number of elements allowed within the buffer. It's strongly recommended to use as small of a buffer size as possible to minimize memory usage and garbage collection. Experiment to see what works best. This property will be ignored if `buffer` is set to `false`. Buffers larger than 30 elements may not be necessary.<br><br>**CAUTION:** Increasing the buffer size will increase CPU and memory usage. 
 
 ## GPS and Network Data
 
@@ -177,7 +177,7 @@ If you set the `buffer` configuration option to `true` this will enable new attr
 
 Buffering is typically used in commercial and government applications that require greater accuracy for determining static locations. Using the buffer will minimize location fluctuations by providing an averaged geometric center of cartesian coordinates.
 
-Best practices for buffer requires the user to hold the device still in one location until the desired accuracy level is reached. An all-JavaScript (non-native Android) sample app can be found in the html5-geolocation-tool-js [Field Location Template](https://github.com/Esri/html5-geolocation-tool-js).
+Best practices for buffer requires the user to hold the device still in one location until the desired accuracy level is reached and the buffer is full. An all-JavaScript (non-native Android) sample app can be found in the html5-geolocation-tool-js [Field Location Template](https://github.com/Esri/html5-geolocation-tool-js).
 
 Note that cached location data is not buffered since there will only one cached location per provider.
 
