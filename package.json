@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/andygup/cordova-plugin-advanced-geolocation.git"
+    "url": "https://github.com/esri/cordova-plugin-advanced-geolocation.git"
   },
   "keywords": [
     "gps",
@@ -32,7 +32,7 @@
   "author": "Andy Gup. @agup",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/andygup/cordova-plugin-advanced-geolocation/issues"
+    "url": "https://github.com/esri/cordova-plugin-advanced-geolocation/issues"
   },
-  "homepage": "https://github.com/andygup/cordova-plugin-advanced-geolocation/blob/master/README.md"
+  "homepage": "https://github.com/esri/cordova-plugin-advanced-geolocation/blob/master/README.md"
 }
