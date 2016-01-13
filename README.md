@@ -20,7 +20,7 @@ Here are the cliff notes for getting started. More details on the Cordova CLI ca
 
 `cordova platform update android@5.0.0`
 
-`cordova plugin add https://github.com/andygup/cordova-plugin-advanced-geolocation.git`
+`cordova plugin add https://github.com/esri/cordova-plugin-advanced-geolocation.git`
 
 In `config.xml` modify the following: ` <content src="sample-map.html" />`
 
