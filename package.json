@@ -1,0 +1,38 @@
+{
+  "name": "cordova-plugin-advanced-geolocation",
+  "version": "0.1.0",
+  "description": "Android geolocation plugin for both GPS or NETWORK-based location providers.",
+  "cordova": {
+    "id": "cordova-plugin-advanced-geolocation",
+    "platforms": [
+      "android"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andygup/cordova-plugin-advanced-geolocation.git"
+  },
+  "keywords": [
+    "gps",
+    "location",
+    "geolocation",
+    "satellite",
+    "network",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova",
+    "phonegap"
+  ],
+  "engines": [
+    {
+      "name": "cordova",
+      "version": ">=5.0.0"
+    }
+  ],
+  "author": "Andy Gup. @agup",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/andygup/cordova-plugin-advanced-geolocation/issues"
+  },
+  "homepage": "https://github.com/andygup/cordova-plugin-advanced-geolocation/blob/master/README.md"
+}

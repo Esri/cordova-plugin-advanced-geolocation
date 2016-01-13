@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="cordova-plugin-advanced-geolocation"
+    version="0.1.0">
+
+    <name>Cordova Advanced Geolocation Plugin - Android</name>
+    <description>
+        Android geolocation plugin for both GPS or NETWORK-based location providers.
+    </description>
+    <license>Apache 2.0</license>
+    <keywords>cordova,phonegap,geolocation,gps,android,network,satellite</keywords>
+    <repo>https://github.com/andygup/cordova-plugin-advanced-geolocation.git</repo>
+
+    <engines>
+        <engine name="cordova-android" version=">=5.0.0" />
+    </engines>
+
+    <!-- android is the only platform supported by this plugin! -->
+    <platform name="android">
+
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+        </config-file>
+
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="AdvancedGeolocation">
+                <param name="android-package" value="com.esri.cordova.geolocation.AdvancedGeolocation" />
+            </feature>
+        </config-file>
+
+        <!-- Copy over the assets files -->
+        <asset src="sample/sample-map.html" target="sample-map.html" />
+        <asset src="sample/map.js" target="js/map.js" />
+        <asset src="sample/blue-pin.png" target="img/blue-pin.png" />
+        <asset src="sample/green-pin.png" target="img/green-pin.png" />
+
+        <!-- Copy over the Java source files -->
+        <source-file src="src/com/esri/cordova/geolocation/AdvancedGeolocation.java" target-dir="src/com/esri/cordova/geolocation" />
+
+        <source-file src="src/com/esri/cordova/geolocation/controllers/GPSController.java" target-dir="src/com/esri/cordova/geolocation/controllers" />
+        <source-file src="src/com/esri/cordova/geolocation/controllers/NetworkLocationController.java" target-dir="src/com/esri/cordova/geolocation/controllers" />
+
+        <source-file src="src/com/esri/cordova/geolocation/fragments/GPSAlertDialogFragment.java" target-dir="src/com/esri/cordova/geolocation/fragments" />
+        <source-file src="src/com/esri/cordova/geolocation/fragments/NetworkUnavailableDialogFragment.java" target-dir="src/com/esri/cordova/geolocation/fragments" />
+
+        <source-file src="src/com/esri/cordova/geolocation/model/InitStatus.java" target-dir="src/com/esri/cordova/geolocation/model" />
+        <source-file src="src/com/esri/cordova/geolocation/model/Coordinate.java" target-dir="src/com/esri/cordova/geolocation/model" />
+        <source-file src="src/com/esri/cordova/geolocation/model/LocationDataBuffer.java" target-dir="src/com/esri/cordova/geolocation/model" />
+        
+        <source-file src="src/com/esri/cordova/geolocation/utils/JSONHelper.java" target-dir="src/com/esri/cordova/geolocation/utils" />
+        <source-file src="src/com/esri/cordova/geolocation/utils/GeodataHelper.java" target-dir="src/com/esri/cordova/geolocation/utils" />
+
+        <js-module src="www/AdvancedGeolocation.js" name="AdvancedGeolocation">
+            <clobbers target="AdvancedGeolocation" />
+        </js-module>
+
+    </platform>
+</plugin>

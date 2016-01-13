@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <!--
+        Customize this policy to fit your own app's needs. For more guidance, see:
+            https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
+        -->
+        <meta http-equiv="Content-Security-Policy"
+              content="
+            default-src
+                'self'
+                'unsafe-inline'
+                http://*.arcgis.com
+                https://*.arcgis.com
+                http://*.arcgisonline.com
+                https://*.arcgisonline.com;
+            font-src
+                'self'
+                'unsafe-inline'
+                http://*.arcgis.com
+                https://*.arcgis.com
+                data:;
+            img-src
+                'self'
+                http://*.arcgis.com
+                https://*.arcgis.com
+                http://*.arcgisonline.com
+                https://*.arcgisonline.com;
+            style-src
+                'self'
+                http://*.arcgis.com
+                https://*.arcgis.com
+                'unsafe-inline';
+            script-src
+                'self'
+                http://js.arcgis.com
+                https://js.arcgis.com
+                'unsafe-eval';">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no"/>
+        <title>Hello World Map</title>
+        <link rel="stylesheet" href="https://js.arcgis.com/3.15/esri/css/esri.css">
+        <style>
+            html, body, #map {
+                height: 75%;
+                width: 100%;
+                margin: 15;
+                padding: 15;
+            }
+            body {
+                background-color: #FFF;
+                overflow: hidden;
+                font-family: "Trebuchet MS";
+            }
+        </style>
+        <script src="https://js.arcgis.com/3.15/"></script>
+    </head>
+    <body>
+        <div id="map"></div>
+        <hr>
+        <div>
+            GPS&nbsp; <img src="img/blue-pin.png">
+            &nbsp;NETWORK&nbsp; <img src="img/green-pin.png">
+        </div>
+        <hr>
+        <div id="satData"></div>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/map.js"></script>
+    </body>
+</html>
