@@ -4,6 +4,8 @@ Highly configurable native interface to both [GPS](http://developer.android.com/
 
 In comparison to the W3C HTML Geolocation API, this plugin provides you with significantly greater control and more information to make better decisions with geolocation data.
 
+This plugin is available via [npm](https://www.npmjs.com/package/cordova-plugin-advanced-geolocation).
+
 ##Supported Platforms
 
 **Android-only.** This plugin is designed for Android API 5.0.0 (Lollipop / API Level 21) and greater. Cordova supports the following android [releases](https://github.com/apache/cordova-android/releases).
