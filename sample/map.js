@@ -88,7 +88,7 @@ var app = {
                 var satellites = "<br /><span style='font-weight:bold;'>Satellite Data:</span> " + date.toUTCString() + "<br /><br />";
 
                 for( var key in json){
-                    if(json.hasOwnProperty(key) && key != "provider" && key != "timeStamp"){
+                    if(json.hasOwnProperty(key) && key.toLowerCase() != "provider" && key.toLowerCase() != "timestamp"){
                         satellites +=
                             "PRN: " + json[key].PRN +
                             ", fix: " + json[key].usedInFix +
