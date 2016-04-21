@@ -2,6 +2,12 @@
 
 This geolocation API is multi-threaded for maximum efficiency and reduced impact on user experience.
 
+**IMPORTANT - READ THIS FIRST!** There are important differences between GPS Provider data, Network Provider data and Cellular data. It can be confusing. 
+
+* GPS Provider data is focused on providing a device location using latitude and longitude information via a GPS.
+* Network Provider data is focused on providing a device location using latitude and longitude information via information from the cellular network.
+* Cellular data is focused on providing cell tower location information via information from the cellular network.
+
 ##Methods
 Method | Description
 --- | ---
@@ -16,10 +22,10 @@ Option | Type | Description
 `minTime` | integer | The minimum time interval between location updates in milliseconds. Smaller numbers increase battery usage.
 `minDistance` | integer | The minimum distance between location updates in meters. Smaller numbers increase battery usage.
 `noWarn` | boolean | Display native warning popup dialog if GPS or Network is disabled.
-`providers` | String | Acceptable values to specify location providers are: `"gps"`, `"network"`, or `"all"`. Network provider may return locations if WiFi or cellular internet is enabled.
+`providers` | String | Acceptable values to specify location providers are: `"gps"`, `"network"`, `"cell"`, `"all"` or `"some"`. Network provider may return locations if WiFi or cellular internet is enabled.
 `useCache` | boolean | Will return cached values from any active location provider. While not gauranteed, both GPS and NETWORK providers have a cache.
 `satelliteData` | boolean | If `true` it returns all available satellite data from the GPS receiver. Requires that the `gps` provider is also enabled. <br><br>**CAUTION:** Activating satellite data will increase CPU and memory usage. 
-`buffer` | boolean | If `true` it will start a buffer that returns the averaged geometric center. Use this when requirements call for determining a single, best location. The buffer uses a FIFO ordering, so new values added and old values are removed. 
+`buffer` | boolean | If `true` it will start a buffer that returns the averaged geometric center of GPS and/or NETWORK locations. Use this when requirements call for determining a single, best location. The buffer uses a FIFO ordering, so new values added and old values are removed. 
 `bufferSize` | integer | The maximum number of elements allowed within the buffer. It's strongly recommended to use as small of a buffer size as possible to minimize memory usage and garbage collection. Experiment to see what works best. This property will be ignored if `buffer` is set to `false`. Buffers larger than 30 elements may not be necessary.<br><br>**CAUTION:** Increasing the buffer size will increase CPU and memory usage. 
 
 ## GPS and Network Data
@@ -118,3 +124,179 @@ number | String | number | Each satellite is assigned a sequential number for as
 `hasEphemeris` | String | boolean | Returns true if the GPS engine has ephemeris data for the satellite. 
 `hasAlmanac` | String | boolean | Returns true if the GPS engine has almanac data for the satellite. 
 `SNR` | String | number | Returns the signal to noise ratio for the satellite.  
+
+# Cellular Data
+
+This API is non-specific in that it will attempt to return most cellular data that is available on the device. To clarify: 'most` cellular data means there may be some operational aspects of the native Android API that either aren't currently included or were unintentionally missed.
+
+This API will return data under two circumstances:
+
+* When first launched it will force a query via [TelephonyManager.getAllCellInfo()](http://developer.android.com/reference/android/telephony/TelephonyManager.html#getAllCellInfo()).
+* When [PhoneStateListener.LISTEN_CELL_LOCATION](http://developer.android.com/reference/android/telephony/PhoneStateListener.html#LISTEN_CELL_LOCATION) indicates a change.
+
+A full set of detailed information is available via the [`android.telephony`](http://developer.android.com/reference/android/telephony/package-summary.html) class documentation.
+
+**IMPORTANT** Please make note of the following:
+
+* There are minimum device SDK requirements. API level 17 is the current minimum to take advantage of this functionality.
+* Activating cellular data may result in additional network charges for the user.
+* This information is not gauranteed. 
+
+Examples:
+
+```javascript
+
+	// cell_info wcdma
+	
+	{
+	"provider":"cell_info",
+	"type":"wcdma",
+	"timestamp":1461272187532,
+	"cid":2147483647,
+	"lac":2147483647,
+	"mcc":2147483647,
+	"mnc":2147483647,
+	"psc":217
+	}
+	
+	// cell_location gsm
+	
+	{
+	"provider":"cell_location",
+	"type":"gsm",
+	"timestamp":1461274048131,
+	"cid":40052763,
+	"lac":38995,
+	"psc":87
+	}
+
+```
+
+
+##cell_info CDMA Data
+
+If you have the Configuration option `cell` or `all` set, then this API will attempt to retrieve low-level data about the cellular service.
+
+**WARNING:** Take extra steps to protect how you handle your input data when using this API. Check for `null` values as well as min and max integers.
+
+* The information reported via this Android SDK API is flaky.
+* Not all devices will provide all the information described.
+* In some cases, may return `null` or `Integer.MAX_VALUE`
+
+Property | Type |  Value | Description
+--- | --- | --- | ---
+`provider` | String | `cell_info` | Let's you determine where this data is coming from.
+`type` | String | `cdma` | Depends on the device, cell service provider and how many radios are active. It can return multiple values.
+`timestamp` | number | milliseconds | Time right now based on the Calendar whose locale is determined by system settings. Gregorian calendar assumes counting begins at the start of the epoch: i.e., YEAR = 1970, MONTH = JANUARY, DATE = 1, etc. For more info see [java.util.Calendar](http://developer.android.com/reference/java/util/Calendar.html).
+`baseStationId` | integer | 0 - 65535 | Base Station Id. Integer.MAX_VALUE if unknown.
+`latitude` | number | +-90 | Decimal degrees. Integer.MAX_VALUE if unknown.
+`longitude` | number | +-180 | Decimal degrees. Integer.MAX_VALUE if unknown.
+`networkId` | integer | 0 - 65535 | Network Id. Integer.MAX_VALUE if unknown.
+`systemId` | integer | 0 - 32767 | System Id. Integer.MAX_VALUE if unknown.
+
+## cell_info LTE Data
+
+If you have the Configuration option `cell` or `all` set, then this API will attempt to retrieve low-level data about the cellular service.
+
+**WARNING:** Take extra steps to protect how you handle your input data when using this API. Check for `null` values as well as min and max integers.
+
+* The information reported via this Android SDK API is flaky.
+* Not all devices will provide all the information described.
+* In some cases, may return `null` or `Integer.MAX_VALUE`
+
+Property | Type |  Value | Description
+--- | --- | --- | ---
+`provider` | String | `cell_info` | Let's you determine where this data is coming from.
+`type` | String | `lte` | Depends on the device, cell service provider and how many radios are active. It can return multiple values.
+`timestamp` | number | milliseconds | Time right now based on the Calendar whose locale is determined by system settings. Gregorian calendar assumes counting begins at the start of the epoch: i.e., YEAR = 1970, MONTH = JANUARY, DATE = 1, etc. For more info see [java.util.Calendar](http://developer.android.com/reference/java/util/Calendar.html).
+`ci` | integer | 0 - ~134,217,727 | 28-bit Cell Identity, Integer.MAX_VALUE if unknown.
+`mcc` | integer | 0 - 999 | 3-digit Mobile Country Code. Integer.MAX_VALUE if unknown.
+`mnc` | integer | 0 - 999 | 3-digit Mobile Network Code. Integer.MAX_VALUE if unknown.
+`pci` | integer | 0 - 503 | Physical Cell Id. Integer.MAX_VALUE if unknown.
+`tac` | integer | 0 - 65535 | 16-bit Tracking Area Code. Integer.MAX_VALUE if unknown.
+
+## cell_info GSM Data
+
+If you have the Configuration option `cell` or `all` set, then this API will attempt to retrieve low-level data about the cellular service.
+
+**WARNING:** Take extra steps to protect how you handle your input data when using this API. Check for `null` values as well as min and max integers.
+
+* The information reported via this Android SDK API is flaky.
+* Not all devices will provide all the information described.
+* In some cases, may return `null` or `Integer.MAX_VALUE`
+
+Property | Type |  Value | Description
+--- | --- | --- | ---
+`provider` | String | `cell_info` | Let's you determine where this data is coming from.
+`type` | String | `gsm` | Depends on the device, cell service provider and how many radios are active. It can return multiple values.
+`timestamp` | number | milliseconds | Time right now based on the Calendar whose locale is determined by system settings. Gregorian calendar assumes counting begins at the start of the epoch: i.e., YEAR = 1970, MONTH = JANUARY, DATE = 1, etc. For more info see [java.util.Calendar](http://developer.android.com/reference/java/util/Calendar.html).
+`cid` | integer | 0 - 268435455 | CID 28-bit UMTS Cell Identity described in TS 25.331. Integer.MAX_VALUE if unknown.
+`lac` | integer | 0 - 65535 | 16-bit Location Area Code. Integer.MAX_VALUE if unknown.
+`mcc` | integer | 0 - 999 | 3-digit Mobile Country Code. Integer.MAX_VALUE if unknown.
+`mnc` | integer | 0 - 999 | 3-digit Mobile Network Code. Integer.MAX_VALUE if unknown.
+`psc` | integer | 0 - 511 | 9-bit UMTS Primary Scrambling Code described in TS 25.331. Integer.MAX_VALUE if unknown.
+
+## cell_info WCDMA Data
+
+If you have the Configuration option `cell` or `all` set, then this API will attempt to retrieve low-level data about the cellular service.
+
+**WARNING:** Take extra steps to protect how you handle your input data when using this API. Check for `null` values as well as min and max integers.
+
+* The information reported via this Android SDK API is flaky.
+* Not all devices will provide all the information described.
+* In some cases, may return `null` or `Integer.MAX_VALUE`
+
+Property | Type |  Value | Description
+--- | --- | --- | ---
+`provider` | String | `cell_info` | Let's you determine where this data is coming from.
+`type` | String | `wcdma` | Depends on the device, cell service provider and how many radios are active. It can return multiple values.
+`timestamp` | number | milliseconds | Time right now based on the Calendar whose locale is determined by system settings. Gregorian calendar assumes counting begins at the start of the epoch: i.e., YEAR = 1970, MONTH = JANUARY, DATE = 1, etc. For more info see [java.util.Calendar](http://developer.android.com/reference/java/util/Calendar.html).
+`cid` | integer | 0 - 268435455 | CID 28-bit UMTS Cell Identity described in TS 25.331. Integer.MAX_VALUE if unknown.
+`lac` | integer | 0 - 65535 | 16-bit Location Area Code. Integer.MAX_VALUE if unknown.
+`mcc` | integer | 0 - 999 | 3-digit Mobile Country Code. Integer.MAX_VALUE if unknown.
+`mnc` | integer | 0 - 999 | 3-digit Mobile Network Code. Integer.MAX_VALUE if unknown.
+`psc` | integer | 0 - 511 | 9-bit UMTS Primary Scrambling Code described in TS 25.331. Integer.MAX_VALUE if unknown.
+
+##cell_location CDMA Data
+
+If you have the Configuration option `cell` or `all` set, then this API will attempt to retrieve low-level data about the cellular service.
+
+**WARNING:** Take extra steps to protect how you handle your input data when using this API. Check for `null` values as well as min and max integers.
+
+* The information reported via this Android SDK API is flaky.
+* Not all devices will provide all the information described.
+* In some cases, may return `null` or `Integer.MAX_VALUE`
+
+Property | Type |  Value | Description
+--- | --- | --- | ---
+`provider` | String | `cell_location` | Let's you determine where this data is coming from.
+`type` | String | `cdma` | Depends on the device, cell service provider and how many radios are active. It can return multiple values.
+`timestamp` | number | milliseconds | Time right now based on the Calendar whose locale is determined by system settings. Gregorian calendar assumes counting begins at the start of the epoch: i.e., YEAR = 1970, MONTH = JANUARY, DATE = 1, etc. For more info see [java.util.Calendar](http://developer.android.com/reference/java/util/Calendar.html).
+`baseStationId` | integer | ? | Base Station Id. -1 if unknown.
+`latitude` | number | +-90 | Decimal degrees. Integer.MAX_VALUE if unknown.
+`longitude` | number | +-180 | Decimal degrees. Integer.MAX_VALUE if unknown.
+`networkId` | integer | ? | Network Id. -1 if unknown.
+`systemId` | integer | ? | System Id. -1 if unknown.
+
+## cell_location GSM Data
+
+If you have the Configuration option `cell` or `all` set, then this API will attempt to retrieve low-level data about the cellular service.
+
+**WARNING:** Take extra steps to protect how you handle your input data when using this API. Check for `null` values as well as min and max integers.
+
+* The information reported via this Android SDK API is flaky.
+* Not all devices will provide all the information described.
+* In some cases, may return `null` or `Integer.MAX_VALUE`
+
+Property | Type |  Value | Description
+--- | --- | --- | ---
+`provider` | String | `cell_location` | Let's you determine where this data is coming from.
+`type` | String | `gsm` | Depends on the device, cell service provider and how many radios are active. It can return multiple values.
+`timestamp` | number | milliseconds | Time right now based on the Calendar whose locale is determined by system settings. Gregorian calendar assumes counting begins at the start of the epoch: i.e., YEAR = 1970, MONTH = JANUARY, DATE = 1, etc. For more info see [java.util.Calendar](http://developer.android.com/reference/java/util/Calendar.html).
+`cid` | integer | ? | GSM cell id, -1 if unknown, 0xffff max legal value.
+`lac` | integer | ? | GSM Location Area Code-1 if unknown, 0xffff max legal value.
+`psc` | integer | ? | UMTS Primary Scrambling Code, -1 if unknown or GSM.
+
+
+
+
