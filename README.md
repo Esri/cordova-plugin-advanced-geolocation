@@ -70,9 +70,13 @@ If your requirements specifically call for less than 3 meter accuracy then consi
 					 //TODO
                     break;
                     
-                case "cell":
+                case "cell_info":
                 	//TODO
                 	break;
+                	
+                case "cell_location":
+                	//TODO
+                	break;                	
             }
         }
         catch(exc){
@@ -111,7 +115,7 @@ Here are example use cases for the different ways location providers can be set 
 * **`"network"`** Activates only the Network provider. Best accuracy indoors and urban/downtown areas with tall buildings where device does not have an unobstructed view of the sky and cellular service is available and/or WiFi. 
 * **`"cell"`** Access cell tower information. This data is pulled from the cellular service.
 * **`"all"`** Activates GPS, Network and Cellular providers. Allows you to take advantage of network providers to establish initial location and then use GPS to finalize a more accurate location. Typically the device will provide the network location first before the GPS warms up. After the GPS warms up, and if the accuracy is good enough for your requirements, then you would switch to using the GPS locations. Cellular providers give you access to cell tower location information.
-* * **`"some"`** Activates GPS and Network providers. Allows you to take advantage of network providers to establish initial location and then use GPS to finalize a more accurate location. Typically the device will provide the network location first before the GPS warms up. After the GPS warms up, and if the accuracy is good enough for your requirements, then you would switch to using the GPS locations.
+* * **`"some"`** Activates only GPS and Network providers. Allows you to take advantage of network providers to establish initial location and then use GPS to finalize a more accurate location. Typically the device will provide the network location first before the GPS warms up. After the GPS warms up, and if the accuracy is good enough for your requirements, then you would switch to using the GPS locations.
 
 
 ##Geolocation Data Description
