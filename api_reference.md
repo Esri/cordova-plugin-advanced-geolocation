@@ -141,6 +141,7 @@ A full set of detailed information is available via the [`android.telephony`](ht
 * There are minimum device SDK requirements. API level 17 is the current minimum to take advantage of this functionality.
 * Activating cellular data may result in additional network charges for the user.
 * This information is not gauranteed. 
+* To make use of this data requires access to a cell tower database. We don't provide cell tower location data, however there are databases available. One example provider is the [OpenCellId organization](http://wiki.opencellid.org/wiki/View_the_data). 
 
 Examples:
 
