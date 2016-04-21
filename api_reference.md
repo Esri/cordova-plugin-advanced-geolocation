@@ -6,7 +6,7 @@ This geolocation API is multi-threaded for maximum efficiency and reduced impact
 
 * GPS Provider data is focused on providing a device location using latitude and longitude information via a GPS.
 * Network Provider data is focused on providing a device location using latitude and longitude information via information from the cellular network.
-* Cellular data is focused on providing cell tower location information via information from the cellular network.
+* Cellular data is focused on providing cell tower locations via information from the cellular network.
 
 ##Methods
 Method | Description
