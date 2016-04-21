@@ -69,6 +69,10 @@ If your requirements specifically call for less than 3 meter accuracy then consi
                 case "satellite":
 					 //TODO
                     break;
+                    
+                case "cell":
+                	//TODO
+                	break;
             }
         }
         catch(exc){
@@ -89,7 +93,7 @@ If your requirements specifically call for less than 3 meter accuracy then consi
         "minTime":500,         // Min time interval between updates (ms)
         "minDistance":1,       // Min distance between updates (meters)
         "noWarn":true,         // Native location provider warnings
-        "providers":"all",     // Return GPS and NETWORK locations
+        "providers":"all",     // Return GPS, NETWORK and CELL locations
         "useCache":true,       // Return GPS and NETWORK cached locations
         "satelliteData":false, // Return of GPS satellite info
         "buffer":false,        // Buffer location data
@@ -105,7 +109,9 @@ Here are example use cases for the different ways location providers can be set 
 
 * **`"gps"`** Activates only the GPS provider. Best accuracy where device has an unobstructed view of the sky.
 * **`"network"`** Activates only the Network provider. Best accuracy indoors and urban/downtown areas with tall buildings where device does not have an unobstructed view of the sky and cellular service is available and/or WiFi. 
-* **`"all"`** Activates both GPS and Network providers. Allows you to take advantage of network providers to establish initial location and then use GPS to finalize a more accurate location. Typically the device will provide the network location first before the GPS warms up. After the GPS warms up, and if the accuracy is good enough for your requirements, then you would switch to using the GPS locations.
+* **`"cell"`** Access cell tower information. This data is pulled from the cellular service.
+* **`"all"`** Activates GPS, Network and Cellular providers. Allows you to take advantage of network providers to establish initial location and then use GPS to finalize a more accurate location. Typically the device will provide the network location first before the GPS warms up. After the GPS warms up, and if the accuracy is good enough for your requirements, then you would switch to using the GPS locations. Cellular providers give you access to cell tower location information.
+* * **`"some"`** Activates GPS and Network providers. Allows you to take advantage of network providers to establish initial location and then use GPS to finalize a more accurate location. Typically the device will provide the network location first before the GPS warms up. After the GPS warms up, and if the accuracy is good enough for your requirements, then you would switch to using the GPS locations.
 
 
 ##Geolocation Data Description
@@ -116,6 +122,7 @@ The following geolocation data may be exposed and accessible by this API if the 
 * GPS satellites meta data
 * Real-time Network location triangulation
 * Cached Network location
+* Cell tower information (type of information varies by device and cell service provider)
 
 #API Reference
 
@@ -124,7 +131,7 @@ Click [here](api_reference.md) to read all about it.
 ## FAQ
 
 * **Which location providers does this plugin use?** The plugin can be configured to use both [GPS](http://developer.android.com/reference/android/location/LocationManager.html#GPS_PROVIDER) and [NETWORK](http://developer.android.com/reference/android/location/LocationManager.html#NETWORK_PROVIDER) location providers. NETWORK location providers require access to the internet whether it's via cellular or WiFi connection. The plugin does not use [PASSIVE](http://developer.android.com/reference/android/location/LocationManager.html#PASSIVE_PROVIDER) location providers because you have no direct control over those.
-* **What is the difference between `CellInfo` and `CellLocation` data?** `CellLocation` is focused on location and taps directly into the detailed information provided by the cellular service provider. It comes in two flavors: [CdmaCellLocation](http://developer.android.com/reference/android/telephony/cdma/CdmaCellLocation.html) and [GsmCellLocation](http://developer.android.com/reference/android/telephony/gsm/GsmCellLocation.html). `CellInfo` contains a sub-set of information focused on the cell tower's id and it's signal strength. The current version of this library doesn't return signal strength info. This comes in four flavors: [CellInfoCdma](http://developer.android.com/reference/android/telephony/CellInfoCdma.html), [CellInfoWcmda](http://developer.android.com/reference/android/telephony/CellInfoWcdma.html), [CellInfoGsm](http://developer.android.com/reference/android/telephony/CellInfoGsm.html) and [CellInfoLte](http://developer.android.com/reference/android/telephony/CellInfoLte.html). 
+* **What is the difference between `CellInfo` and `CellLocation` data?** `CellLocation` is focused on location information provided by the cellular service provider. It comes in two flavors: [CdmaCellLocation](http://developer.android.com/reference/android/telephony/cdma/CdmaCellLocation.html) and [GsmCellLocation](http://developer.android.com/reference/android/telephony/gsm/GsmCellLocation.html). `CellInfo` contains a sub-set of information focused on the cell tower's id and its signal strength. The current version of this library does not return signal strength info. This comes in four flavors: [CellInfoCdma](http://developer.android.com/reference/android/telephony/CellInfoCdma.html), [CellInfoWcmda](http://developer.android.com/reference/android/telephony/CellInfoWcdma.html), [CellInfoGsm](http://developer.android.com/reference/android/telephony/CellInfoGsm.html) and [CellInfoLte](http://developer.android.com/reference/android/telephony/CellInfoLte.html). 
 * **Will this library work as a background process?** No. This library is **not** designed to be used while minimized. Because of its potential to consume large amounts of memory and CPU cycles it will only provide locations, by default, while the application is in the foreground and active.
 * **I got a plugin not supported error, what do I do?** If you get the following error `Plugin doesn't support this project's cordova-android version. cordova-android: 4.1.1, failed version requirement: >=5.0.0
 Skipping 'cordova-plugin-advanced-geolocation' for android`, then you most likely need to upgrade your version of cordova-android. You can explicitly upgrade by running the following command in your cordova project directory `cordova platform update android@5.0.0`. 
