@@ -17,8 +17,6 @@
 package com.esri.cordova.geolocation.controllers;
 
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Looper;
 import android.telephony.CellInfo;
@@ -45,33 +43,37 @@ public final class CellLocationController implements Runnable{
 
     public static final String CELLINFO_PROVIDER = "cell";
     private static final String TAG = "GeolocationPlugin";
+    private static final int MIN_BUILD_VER = 21;
     private static CallbackContext _callbackContext; // Threadsafe
     private static TelephonyManager _telephonyManager = null;
     private static PhoneStateListener _phoneStateListener = null;
     private static CordovaInterface _cordova;
+    private static boolean _isConnected = false;
 
     public CellLocationController(
+            boolean isConnected,
             CordovaInterface cordova,
             CallbackContext callbackContext
     ){
+        _isConnected = isConnected;
         _cordova = cordova;
         _callbackContext = callbackContext;
-        _telephonyManager = (TelephonyManager) _cordova.getActivity().getSystemService(Context.TELEPHONY_SERVICE);
     }
 
     public void run(){
 
         // There are minimum OS version requirements
-        versionCheck();
+        if(versionCheck()){
+            // Reference: http://developer.android.com/reference/android/os/Process.html#THREAD_PRIORITY_BACKGROUND
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
 
-        // Reference: http://developer.android.com/reference/android/os/Process.html#THREAD_PRIORITY_BACKGROUND
-        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-
-        // We are running a Looper to allow the Cordova CallbackContext to be passed within the Thread as a message.
-        if(Looper.myLooper() == null){
-            Looper.prepare();
-            startLocation();
-            Looper.loop();
+            // We are running a Looper to allow the Cordova CallbackContext to be passed within the Thread as a message.
+            if(Looper.myLooper() == null){
+                _telephonyManager = (TelephonyManager) _cordova.getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+                Looper.prepare();
+                startLocation();
+                Looper.loop();
+            }
         }
     }
 
@@ -86,7 +88,7 @@ public final class CellLocationController implements Runnable{
                 }
             });
 
-            if(checkInternet()){
+            if(_isConnected){
                 // Set up a change listener
                 setPhoneStateListener();
 
@@ -96,7 +98,7 @@ public final class CellLocationController implements Runnable{
                 Log.d(TAG, "Starting CellLocationController");
             }
             else {
-                Log.e(TAG, "Unable to start CellLocationController. There is no internet connection.");
+                Log.e(TAG, "Unable to start CellLocationController: no internet connection.");
             }
         }
     }
@@ -109,6 +111,7 @@ public final class CellLocationController implements Runnable{
         if(_phoneStateListener != null && _telephonyManager != null){
             _telephonyManager.listen(_phoneStateListener, PhoneStateListener.LISTEN_NONE);
             _phoneStateListener = null;
+            _telephonyManager = null;
             Thread.currentThread().interrupt();
             Log.d(TAG, "Stopping PhoneStateListener");
         }
@@ -119,7 +122,7 @@ public final class CellLocationController implements Runnable{
      * neighboring cells. Calling this method does not trigger a call to onCellInfoChanged(), or change
      * the rate at which onCellInfoChanged() is called.
      */
-    public void getAllCellInfos(){
+    private void getAllCellInfos(){
         if(_telephonyManager != null) {
             final List<CellInfo> cellInfos = _telephonyManager.getAllCellInfo();
             processCellInfos(cellInfos);
@@ -130,7 +133,6 @@ public final class CellLocationController implements Runnable{
         _phoneStateListener = new PhoneStateListener(){
             @Override
             public void onCellLocationChanged(CellLocation location){
-                Log.d(TAG, "onCellLocationChanged: " + location.toString());
                 if(location instanceof CdmaCellLocation){
                     final CdmaCellLocation cellLocationCdma = (CdmaCellLocation) location;
                     sendCallback(PluginResult.Status.OK,
@@ -192,24 +194,15 @@ public final class CellLocationController implements Runnable{
      * This Class will not work correctly on older versions of the Android SDK
      * Reference: http://developer.android.com/reference/android/telephony/TelephonyManager.html#getAllCellInfo()
      */
-    private static void versionCheck(){
+    private static boolean versionCheck(){
+        boolean verified = true;
         final int version = Build.VERSION.SDK_INT;
-        if(version < 17){
-            Log.e(TAG, "WARNING: A minimum of SDK v17 is required for CellLocation to work, and  minimum of SDK v21 is REQUIRED for this library.");
+        if(version < MIN_BUILD_VER){
+            Log.e(TAG, "WARNING: A minimum SDK v17 is required for CellLocation to work, and  minimum SDK v21 is REQUIRED for this library.");
+            verified = false;
         }
-    }
 
-    /**
-     * This API needs to have an active internet connection to work correctly.
-     * @return boolean
-     */
-    private static boolean checkInternet(){
-        ConnectivityManager cm =
-                (ConnectivityManager) _cordova.getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        return activeNetwork != null &&
-                activeNetwork.isConnected();
+        return verified;
     }
 
     private static void sendCallback(PluginResult.Status status, String message){

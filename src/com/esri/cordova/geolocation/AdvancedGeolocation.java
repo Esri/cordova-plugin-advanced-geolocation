@@ -48,9 +48,6 @@ public class AdvancedGeolocation extends CordovaPlugin {
     public static final String PROVIDERS_SOME = "some";
     public static final String PROVIDERS_GPS = "gps";
     public static final String PROVIDERS_NETWORK = "network";
-
-//TO-DO add cell provider to 'all' provider!
-
     public static final String PROVIDERS_CELL = "cell";
     private static final String TAG = "GeolocationPlugin";
     private static final String SHARED_PREFS_NAME = "LocationSettings";
@@ -132,6 +129,8 @@ public class AdvancedGeolocation extends CordovaPlugin {
         // Misc. note: If you see the message "Attempted to send a second callback for ID:" then you need
         // to make sure to set pluginResult.setKeepCallback(true);
 
+        final boolean networkEnabled = isInternetConnected(_cordova.getActivity().getApplicationContext());
+
         if(_providers.equalsIgnoreCase(PROVIDERS_ALL)){
             _gpsController = new GPSController(
                     _cordova, _callbackContext, _minDistance, _minTime, _useCache, _returnSatelliteData, _buffer, _bufferSize);
@@ -141,7 +140,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
                     _cordova, _callbackContext, _minDistance, _minTime, _useCache, _buffer, _bufferSize);
             cordova.getThreadPool().execute(_networkLocationController);
 
-            _cellLocationController = new CellLocationController(_cordova,_callbackContext);
+            _cellLocationController = new CellLocationController(networkEnabled,_cordova,_callbackContext);
             cordova.getThreadPool().execute(_cellLocationController);
         }
         if(_providers.equalsIgnoreCase(PROVIDERS_SOME)){
@@ -165,7 +164,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
             cordova.getThreadPool().execute(_networkLocationController);
         }
         if(_providers.equalsIgnoreCase(PROVIDERS_CELL)){
-            _cellLocationController = new CellLocationController(_cordova,_callbackContext);
+            _cellLocationController = new CellLocationController(networkEnabled,_cordova,_callbackContext);
             cordova.getThreadPool().execute(_cellLocationController);
         }
     }
@@ -190,16 +189,18 @@ public class AdvancedGeolocation extends CordovaPlugin {
                 // make sure there are no references
                 _networkLocationController = null;
             }
-            if(_cellLocationController != null){
-                // Gracefully attempt to stop location
-                _cellLocationController.stopLocation();
-
-                // make sure there are no references
-                _cellLocationController = null;
-            }
 
             // make sure there are no references
             _locationManager = null;
+        }
+
+        // CellLocationController does not require LocationManager
+        if(_cellLocationController != null){
+            // Gracefully attempt to stop location
+            _cellLocationController.stopLocation();
+
+            // make sure there are no references
+            _cellLocationController = null;
         }
 
         Log.d(TAG, "Stopping geolocation");
@@ -216,8 +217,8 @@ public class AdvancedGeolocation extends CordovaPlugin {
             startLocation();
         }
         else {
-            SharedPreferences preferences = _cordova.getActivity().getSharedPreferences(SHARED_PREFS_NAME,0);
-            String action = preferences.getString(SHARED_PREFS_ACTION,"");
+            final SharedPreferences preferences = _cordova.getActivity().getSharedPreferences(SHARED_PREFS_NAME,0);
+            final String action = preferences.getString(SHARED_PREFS_ACTION,"");
             if(!action.equals("")){
                 runAction(action);
             }
@@ -320,8 +321,8 @@ public class AdvancedGeolocation extends CordovaPlugin {
 
         try{
             final ConnectivityManager connectivityManager = (ConnectivityManager) con.getSystemService(Context.CONNECTIVITY_SERVICE);
+            final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 
-            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
             if(networkInfo.isConnected()){
                 connected = true;
             }
@@ -352,7 +353,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
         Log.d(TAG,"Execute args: " + args.toString());
         if(args.length() > 0){
             try {
-                JSONObject obj = args.getJSONObject(0);
+                final JSONObject obj = args.getJSONObject(0);
                 _minTime = obj.getLong("minTime");
                 _minDistance = obj.getLong("minDistance");
                 _noWarn = obj.getBoolean("noWarn");

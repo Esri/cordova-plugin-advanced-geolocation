@@ -243,7 +243,7 @@ public final class JSONHelper {
                 json.put("type", LTE);
                 json.put("timestamp", calendar.getTimeInMillis());
 
-                CellIdentityLte identityLte = cellInfo.getCellIdentity();
+                final CellIdentityLte identityLte = cellInfo.getCellIdentity();
 
                 json.put("ci", identityLte.getCi());
                 json.put("mcc", identityLte.getMcc());
