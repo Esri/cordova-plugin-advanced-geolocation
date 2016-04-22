@@ -19,6 +19,16 @@ package com.esri.cordova.geolocation.utils;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
 import android.location.Location;
+import android.telephony.CellIdentityCdma;
+import android.telephony.CellIdentityGsm;
+import android.telephony.CellIdentityLte;
+import android.telephony.CellIdentityWcdma;
+import android.telephony.CellInfoCdma;
+import android.telephony.CellInfoGsm;
+import android.telephony.CellInfoLte;
+import android.telephony.CellInfoWcdma;
+import android.telephony.cdma.CdmaCellLocation;
+import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -32,6 +42,12 @@ import java.util.Calendar;
 public final class JSONHelper {
 
     public static final String SATELLITE_PROVIDER = "satellite";
+    public static final String CELLINFO_PROVIDER = "cell_info";
+    public static final String CELLLOCATION_PROVIDER = "cell_location";
+    private static final String CDMA = "cdma";
+    private static final String WCDMA = "wcdma";
+    private static final String GSM = "gsm";
+    private static final String LTE = "lte";
     private static final String TAG = "GeolocationPlugin";
 
     /**
@@ -109,6 +125,190 @@ public final class JSONHelper {
                 json.put("bufferedAccuracy", bufferedAccuracy);
             }
             catch (JSONException exc) {
+                Log.d(TAG, exc.getMessage());
+            }
+        }
+
+        return json.toString();
+    }
+
+    /**
+     * Converts CellInfoCdma into JSON
+     * @param cellInfo
+     * @return JSON
+     */
+    public static String cellInfoCDMAJSON(CellInfoCdma cellInfo){
+
+        final Calendar calendar = Calendar.getInstance();
+        final JSONObject json = new JSONObject();
+
+        if(cellInfo != null){
+            try {
+                json.put("provider", CELLINFO_PROVIDER);
+                json.put("type", CDMA);
+                json.put("timestamp", calendar.getTimeInMillis());
+
+                CellIdentityCdma identityCdma = cellInfo.getCellIdentity();
+
+                json.put("latitude", CdmaCellLocation.convertQuartSecToDecDegrees(identityCdma.getLatitude()));
+                json.put("longitude", CdmaCellLocation.convertQuartSecToDecDegrees(identityCdma.getLongitude()));
+                json.put("basestationId", identityCdma.getBasestationId());
+                json.put("networkId", identityCdma.getNetworkId());
+                json.put("systemId", identityCdma.getSystemId());
+            }
+            catch(JSONException exc) {
+                Log.d(TAG, exc.getMessage());
+            }
+        }
+        return json.toString();
+    }
+
+    /**
+     * Converts CellInfoWcdma into JSON
+     * Some devices may not work correctly:
+     * - Reference 1: https://code.google.com/p/android/issues/detail?id=191492
+     * - Reference 2: http://stackoverflow.com/questions/17815062/cellidentitygsm-on-android
+     * @param cellInfo
+     * @return JSON
+     */
+    public static String cellInfoWCDMAJSON(CellInfoWcdma cellInfo){
+
+        final Calendar calendar = Calendar.getInstance();
+        final JSONObject json = new JSONObject();
+
+        if(cellInfo != null){
+            try {
+                json.put("provider", CELLINFO_PROVIDER);
+                json.put("type", WCDMA);
+                json.put("timestamp", calendar.getTimeInMillis());
+
+                CellIdentityWcdma identityWcdma = cellInfo.getCellIdentity();
+
+                json.put("cid", identityWcdma.getCid());
+                json.put("lac", identityWcdma.getLac());
+                json.put("mcc", identityWcdma.getMcc());
+                json.put("mnc", identityWcdma.getMnc());
+                json.put("psc", identityWcdma.getPsc());
+            }
+            catch(JSONException exc) {
+                Log.d(TAG, exc.getMessage());
+            }
+        }
+        return json.toString();
+    }
+
+    /**
+     * Converts CellInfoGsm into JSON
+     * @param cellInfo
+     * @return JSON
+     */
+    public static String cellInfoGSMJSON(CellInfoGsm cellInfo){
+
+        final Calendar calendar = Calendar.getInstance();
+        final JSONObject json = new JSONObject();
+
+        if(cellInfo != null){
+            try {
+                json.put("provider", CELLINFO_PROVIDER);
+                json.put("type", GSM);
+                json.put("timestamp", calendar.getTimeInMillis());
+
+                CellIdentityGsm identityGsm = cellInfo.getCellIdentity();
+
+                json.put("cid", identityGsm.getCid());
+                json.put("lac", identityGsm.getLac());
+                json.put("mcc", identityGsm.getMcc());
+                json.put("mnc", identityGsm.getMnc());
+            }
+            catch(JSONException exc) {
+                Log.d(TAG, exc.getMessage());
+            }
+        }
+        return json.toString();
+    }
+
+    /**
+     * Converts CellInfoLte into JSON
+     * @param cellInfo
+     * @return JSON
+     */
+    public static String cellInfoLTEJSON(CellInfoLte cellInfo){
+
+        final Calendar calendar = Calendar.getInstance();
+        final JSONObject json = new JSONObject();
+
+        if(cellInfo != null){
+            try {
+                json.put("provider", CELLINFO_PROVIDER);
+                json.put("type", LTE);
+                json.put("timestamp", calendar.getTimeInMillis());
+
+                CellIdentityLte identityLte = cellInfo.getCellIdentity();
+
+                json.put("ci", identityLte.getCi());
+                json.put("mcc", identityLte.getMcc());
+                json.put("mnc", identityLte.getMnc());
+                json.put("pci", identityLte.getPci());
+                json.put("tac", identityLte.getTac());
+            }
+            catch(JSONException exc) {
+                Log.d(TAG, exc.getMessage());
+            }
+        }
+        return json.toString();
+    }
+
+    /**
+     * Parses data from PhoneStateListener.LISTEN_CELL_LOCATION.onCellLocationChanged
+     * http://developer.android.com/reference/android/telephony/cdma/CdmaCellLocation.html
+     * @param location
+     * @return JSON
+     */
+    public static String cdmaCellLocationJSON(CdmaCellLocation location){
+
+        final Calendar calendar = Calendar.getInstance();
+        final JSONObject json = new JSONObject();
+
+        if(location != null){
+            try {
+                json.put("provider", CELLLOCATION_PROVIDER);
+                json.put("type", CDMA);
+                json.put("timestamp", calendar.getTimeInMillis());
+                json.put("baseStationId", location.getBaseStationId()); // -1 if unknown
+                json.put("networkId", location.getNetworkId()); // -1 if unknown
+                json.put("systemId", location.getSystemId()); // -1 if unknown
+                json.put("baseStationLatitude", CdmaCellLocation.convertQuartSecToDecDegrees(location.getBaseStationLatitude()));
+                json.put("baseStationLongitude", CdmaCellLocation.convertQuartSecToDecDegrees(location.getBaseStationLongitude()));
+            }
+            catch(JSONException exc) {
+                Log.d(TAG, exc.getMessage());
+            }
+        }
+
+        return json.toString();
+    }
+
+    /**
+     * Parses data from PhoneStateListener.LISTEN_CELL_LOCATION.onCellLocationChanged
+     * http://developer.android.com/reference/android/telephony/cdma/CdmaCellLocation.html
+     * @param location
+     * @return JSON
+     */
+    public static String gsmCellLocationJSON(GsmCellLocation location){
+
+        final Calendar calendar = Calendar.getInstance();
+        final JSONObject json = new JSONObject();
+
+        if(location != null){
+            try {
+                json.put("provider", CELLLOCATION_PROVIDER);
+                json.put("type", GSM);
+                json.put("timestamp", calendar.getTimeInMillis());
+                json.put("cid", location.getCid());
+                json.put("lac", location.getLac());
+                json.put("psc", location.getPsc());
+            }
+            catch(JSONException exc) {
                 Log.d(TAG, exc.getMessage());
             }
         }

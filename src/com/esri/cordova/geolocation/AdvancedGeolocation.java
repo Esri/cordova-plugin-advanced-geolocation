@@ -16,6 +16,7 @@
  */
 package com.esri.cordova.geolocation;
 
+import com.esri.cordova.geolocation.controllers.CellLocationController;
 import com.esri.cordova.geolocation.fragments.GPSAlertDialogFragment;
 import com.esri.cordova.geolocation.controllers.GPSController;
 import com.esri.cordova.geolocation.controllers.NetworkLocationController;
@@ -44,8 +45,13 @@ import java.util.concurrent.TimeUnit;
 public class AdvancedGeolocation extends CordovaPlugin {
 
     public static final String PROVIDERS_ALL = "all";
+    public static final String PROVIDERS_SOME = "some";
     public static final String PROVIDERS_GPS = "gps";
     public static final String PROVIDERS_NETWORK = "network";
+
+//TO-DO add cell provider to 'all' provider!
+
+    public static final String PROVIDERS_CELL = "cell";
     private static final String TAG = "GeolocationPlugin";
     private static final String SHARED_PREFS_NAME = "LocationSettings";
     private static final String SHARED_PREFS_ACTION = "action";
@@ -61,6 +67,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
 
     private static GPSController _gpsController = null;
     private static NetworkLocationController _networkLocationController = null;
+    private static CellLocationController _cellLocationController = null;
     private static LocationManager _locationManager;
     private static CordovaInterface _cordova;
     private static CallbackContext _callbackContext;
@@ -133,6 +140,19 @@ public class AdvancedGeolocation extends CordovaPlugin {
             _networkLocationController = new NetworkLocationController(
                     _cordova, _callbackContext, _minDistance, _minTime, _useCache, _buffer, _bufferSize);
             cordova.getThreadPool().execute(_networkLocationController);
+
+            _cellLocationController = new CellLocationController(_cordova,_callbackContext);
+            cordova.getThreadPool().execute(_cellLocationController);
+        }
+        if(_providers.equalsIgnoreCase(PROVIDERS_SOME)){
+            _gpsController = new GPSController(
+                    _cordova, _callbackContext, _minDistance, _minTime, _useCache, _returnSatelliteData, _buffer, _bufferSize);
+            cordova.getThreadPool().execute(_gpsController);
+
+            _networkLocationController = new NetworkLocationController(
+                    _cordova, _callbackContext, _minDistance, _minTime, _useCache, _buffer, _bufferSize);
+            cordova.getThreadPool().execute(_networkLocationController);
+
         }
         if(_providers.equalsIgnoreCase(PROVIDERS_GPS)){
             _gpsController = new GPSController(
@@ -143,6 +163,10 @@ public class AdvancedGeolocation extends CordovaPlugin {
             _networkLocationController = new NetworkLocationController(
                     _cordova, _callbackContext, _minDistance, _minTime, _useCache, _buffer, _bufferSize);
             cordova.getThreadPool().execute(_networkLocationController);
+        }
+        if(_providers.equalsIgnoreCase(PROVIDERS_CELL)){
+            _cellLocationController = new CellLocationController(_cordova,_callbackContext);
+            cordova.getThreadPool().execute(_cellLocationController);
         }
     }
 
@@ -165,6 +189,13 @@ public class AdvancedGeolocation extends CordovaPlugin {
 
                 // make sure there are no references
                 _networkLocationController = null;
+            }
+            if(_cellLocationController != null){
+                // Gracefully attempt to stop location
+                _cellLocationController.stopLocation();
+
+                // make sure there are no references
+                _cellLocationController = null;
             }
 
             // make sure there are no references
