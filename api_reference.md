@@ -127,9 +127,11 @@ number | String | number | Each satellite is assigned a sequential number for as
 
 # Cellular Data
 
-This API is non-specific in that it will attempt to return most cellular data that is available on the device. To clarify: 'most` cellular data means there may be some operational aspects of the native Android API that either aren't currently included or were unintentionally missed.
+If you have the `providers` Configuration option set to `cell` or `all` then this API will attempt to retrieve low-level data about the cellular service.
 
-This API will return data under two circumstances:
+This API is non-specific in that it will attempt to return most cellular data that is available on the device. To clarify: 'most' cellular data means there may be some operational aspects of the native Android API that either aren't currently included or were unintentionally missed. 
+
+Data will be returned under two circumstances:
 
 * When first launched it will force a query via [TelephonyManager.getAllCellInfo()](http://developer.android.com/reference/android/telephony/TelephonyManager.html#getAllCellInfo()).
 * When [PhoneStateListener.LISTEN_CELL_LOCATION](http://developer.android.com/reference/android/telephony/PhoneStateListener.html#LISTEN_CELL_LOCATION) indicates a change.
@@ -141,14 +143,40 @@ A full set of detailed information is available via the [`android.telephony`](ht
 * There are minimum device SDK requirements. API level 17 is the current minimum to take advantage of this specific functionality. Plus, this project requires a minimum of SDK 21 or greater. Be aware of how you set the `minSdkVersion` in the AndroidManifest, for example: `<uses-sdk android:minSdkVersion="21" android:targetSdkVersion="22" />`
 * Activating cellular data may result in additional network charges for the user.
 * This information is not gauranteed.
-* It is a known native Android issue that the `TelephonyManager` API may not work correctly on all devices. 
-* To make use of this data for locating a cell tower requires access to a cell tower database. We don't provide cell tower location data, however there are databases available. One example provider is the [OpenCellId organization](http://wiki.opencellid.org/wiki/View_the_data). 
+* The `TelephonyManager` API may not work correctly on all devices. 
+* To make use of this data you'll need access to a cell tower database. We don't provide cell tower location data, however there are databases and services available. One example provider is the [OpenCellId organization](http://wiki.opencellid.org/wiki/View_the_data). 
+* Take extra steps to protect the input data when using this API. Check for `null` or `Integer.MAX_VALUE`.
 
 Examples:
 
 ```javascript
 
-	// cell_info wcdma
+	// cell_info wcdma - valid
+	
+	{
+	"provider":"cell_info",
+	"type":"wcdma",
+	"timestamp":1461272187532,
+	"cid":40052763,
+	"lac":38995,
+	"mcc":310,
+	"mnc":410,
+	"psc":217
+	}
+	
+	// cell_location gsm - valid
+	
+	{
+	"provider":"cell_location",
+	"type":"gsm",
+	"timestamp":1461274048131,
+	"cid":40052763,
+	"lac":38995,
+	"psc":87
+	}
+	
+	// cell_info wcdma - not valid
+	// Problem: device returning max integer values.
 	
 	{
 	"provider":"cell_info",
@@ -159,31 +187,12 @@ Examples:
 	"mcc":2147483647,
 	"mnc":2147483647,
 	"psc":217
-	}
-	
-	// cell_location gsm
-	
-	{
-	"provider":"cell_location",
-	"type":"gsm",
-	"timestamp":1461274048131,
-	"cid":40052763,
-	"lac":38995,
-	"psc":87
-	}
+	}	
 
 ```
 
 
 ##cell_info CDMA Data
-
-If you have the Configuration option `cell` or `all` set, then this API will attempt to retrieve low-level data about the cellular service.
-
-**WARNING:** Take extra steps to protect how you handle your input data when using this API. Check for `null` values as well as min and max integers.
-
-* The information reported via this Android SDK API is flaky.
-* Not all devices will provide all the information described.
-* In some cases, may return `null` or `Integer.MAX_VALUE`
 
 Property | Type |  Value | Description
 --- | --- | --- | ---
@@ -198,14 +207,6 @@ Property | Type |  Value | Description
 
 ## cell_info LTE Data
 
-If you have the Configuration option `cell` or `all` set, then this API will attempt to retrieve low-level data about the cellular service.
-
-**WARNING:** Take extra steps to protect how you handle your input data when using this API. Check for `null` values as well as min and max integers.
-
-* The information reported via this Android SDK API is flaky.
-* Not all devices will provide all the information described.
-* In some cases, may return `null` or `Integer.MAX_VALUE`
-
 Property | Type |  Value | Description
 --- | --- | --- | ---
 `provider` | String | `cell_info` | Let's you determine where this data is coming from.
@@ -218,14 +219,6 @@ Property | Type |  Value | Description
 `tac` | integer | 0 - 65535 | 16-bit Tracking Area Code. Integer.MAX_VALUE if unknown.
 
 ## cell_info GSM Data
-
-If you have the Configuration option `cell` or `all` set, then this API will attempt to retrieve low-level data about the cellular service.
-
-**WARNING:** Take extra steps to protect how you handle your input data when using this API. Check for `null` values as well as min and max integers.
-
-* The information reported via this Android SDK API is flaky.
-* Not all devices will provide all the information described.
-* In some cases, may return `null` or `Integer.MAX_VALUE`
 
 Property | Type |  Value | Description
 --- | --- | --- | ---
@@ -240,14 +233,6 @@ Property | Type |  Value | Description
 
 ## cell_info WCDMA Data
 
-If you have the Configuration option `cell` or `all` set, then this API will attempt to retrieve low-level data about the cellular service.
-
-**WARNING:** Take extra steps to protect how you handle your input data when using this API. Check for `null` values as well as min and max integers.
-
-* The information reported via this Android SDK API is flaky.
-* Not all devices will provide all the information described.
-* In some cases, may return `null` or `Integer.MAX_VALUE`
-
 Property | Type |  Value | Description
 --- | --- | --- | ---
 `provider` | String | `cell_info` | Let's you determine where this data is coming from.
@@ -261,34 +246,18 @@ Property | Type |  Value | Description
 
 ##cell_location CDMA Data
 
-If you have the Configuration option `cell` or `all` set, then this API will attempt to retrieve low-level data about the cellular service.
-
-**WARNING:** Take extra steps to protect how you handle your input data when using this API. Check for `null` values as well as min and max integers.
-
-* The information reported via this Android SDK API is flaky.
-* Not all devices will provide all the information described.
-* In some cases, may return `null` or `Integer.MAX_VALUE`
-
 Property | Type |  Value | Description
 --- | --- | --- | ---
 `provider` | String | `cell_location` | Let's you determine where this data is coming from.
 `type` | String | `cdma` | Depends on the device, cell service provider and how many radios are active. It can return multiple values.
 `timestamp` | number | milliseconds | Time right now based on the Calendar whose locale is determined by system settings. Gregorian calendar assumes counting begins at the start of the epoch: i.e., YEAR = 1970, MONTH = JANUARY, DATE = 1, etc. For more info see [java.util.Calendar](http://developer.android.com/reference/java/util/Calendar.html).
 `baseStationId` | integer | ? | Base Station Id. -1 if unknown.
-`latitude` | number | +-90 | Decimal degrees. Integer.MAX_VALUE if unknown.
-`longitude` | number | +-180 | Decimal degrees. Integer.MAX_VALUE if unknown.
+`latitude` | number | -90 - 90 | Decimal degrees. Integer.MAX_VALUE if unknown.
+`longitude` | number | -180 - 180 | Decimal degrees. Integer.MAX_VALUE if unknown.
 `networkId` | integer | ? | Network Id. -1 if unknown.
 `systemId` | integer | ? | System Id. -1 if unknown.
 
 ## cell_location GSM Data
-
-If you have the Configuration option `cell` or `all` set, then this API will attempt to retrieve low-level data about the cellular service.
-
-**WARNING:** Take extra steps to protect how you handle your input data when using this API. Check for `null` values as well as min and max integers.
-
-* The information reported via this Android SDK API is flaky.
-* Not all devices will provide all the information described.
-* In some cases, may return `null` or `Integer.MAX_VALUE`
 
 Property | Type |  Value | Description
 --- | --- | --- | ---
