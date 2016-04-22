@@ -113,9 +113,9 @@ Here are example use cases for the different ways location providers can be set 
 
 * **`"gps"`** Activates only the GPS provider. Best accuracy where device has an unobstructed view of the sky.
 * **`"network"`** Activates only the Network provider. Best accuracy indoors and urban/downtown areas with tall buildings where device does not have an unobstructed view of the sky and cellular service is available and/or WiFi. 
-* **`"cell"`** Access cell tower information. This data is pulled from the cellular service.
-* **`"all"`** Activates GPS, Network and Cellular providers. Allows you to take advantage of network providers to establish initial location and then use GPS to finalize a more accurate location. Typically the device will provide the network location first before the GPS warms up. After the GPS warms up, and if the accuracy is good enough for your requirements, then you would switch to using the GPS locations. Cellular providers give you access to cell tower location information.
-* * **`"some"`** Activates only GPS and Network providers. Allows you to take advantage of network providers to establish initial location and then use GPS to finalize a more accurate location. Typically the device will provide the network location first before the GPS warms up. After the GPS warms up, and if the accuracy is good enough for your requirements, then you would switch to using the GPS locations.
+* **`"cell"`** Access only cell tower information. 
+* **`"all"`** Activates GPS, Network and Cellular providers. Allows you to take advantage of network providers to establish initial location and then use GPS to finalize a more accurate location. Typically the device will provide the network location first before the GPS warms up. After the GPS warms up, and if the accuracy is good enough for your requirements, then you would switch to using the GPS locations. The Cellular provider gives you access to cell tower location information.
+* **`"some"`** Activates only GPS and Network providers. Allows you to take advantage of network providers to establish initial location and then use GPS to finalize a more accurate location. Typically the device will provide the network location first before the GPS warms up. After the GPS warms up, and if the accuracy is good enough for your requirements, then you would switch to using the GPS locations.
 
 
 ##Geolocation Data Description
@@ -126,7 +126,7 @@ The following geolocation data may be exposed and accessible by this API if the 
 * GPS satellites meta data
 * Real-time Network location triangulation
 * Cached Network location
-* Cell tower information (type of information varies by device and cell service provider)
+* Cell tower information (type of information varies by device, OS version and cell service provider)
 
 #API Reference
 
