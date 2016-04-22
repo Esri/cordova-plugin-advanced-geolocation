@@ -68,7 +68,6 @@ public final class NetworkLocationController implements Runnable {
         _returnCache = returnCache;
         _buffer = buffer;
         _bufferSize = bufferSize;
-        _locationManager = (LocationManager) _cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);
     }
 
     public void run(){
@@ -77,6 +76,7 @@ public final class NetworkLocationController implements Runnable {
 
         // We are running a Looper to allow the Cordova CallbackContext to be passed within the Thread as a message.
         if(Looper.myLooper() == null){
+            _locationManager = (LocationManager) _cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);
             Looper.prepare();
             startLocation();
             Looper.loop();
