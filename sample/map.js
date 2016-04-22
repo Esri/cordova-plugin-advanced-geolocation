@@ -113,7 +113,6 @@ var app = {
                 AdvancedGeolocation.start(function(data){
 
                     try{
-                        console.log("JSON Location data: " + data);
 
                         // Don't draw anything if graphics layer suspended
                         if(!map.graphics.suspended){
@@ -139,7 +138,17 @@ var app = {
 
                                 case "satellite":
                                     console.log("Satellites detected " + (Object.keys(jsonObject).length - 1));
+                                    console.log("Satellite meta-data: " + data);
                                     addSatelliteData(jsonObject);
+                                    break;
+
+                                case "cell_info":
+                                    console.log("cell_info JSON: " + data);
+                                    satDiv.innerHTML = data;
+                                    break;
+
+                                case "cell_location":
+                                    console.log("cell_location JSON: " + data);
                                     break;
                             }
                         }
