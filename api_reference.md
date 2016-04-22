@@ -5,8 +5,8 @@ This geolocation API is multi-threaded for maximum efficiency and reduced impact
 **IMPORTANT - READ THIS FIRST!** There are important differences between GPS Provider data, Network Provider data and Cellular data. It can be confusing. 
 
 * GPS Provider data is focused on providing a device location using latitude and longitude information via a GPS.
-* Network Provider data is focused on providing a device location using latitude and longitude information via information from the cellular network.
-* Cellular data is focused on providing cell tower locations via information from the cellular network.
+* Network Provider data is focused on providing a device location using latitude and longitude via information from the cellular network.
+* Cellular data is focused on providing cell tower meta-data via information from the cellular network. It may or may not contain a lat/lon. More info below.
 
 ##Methods
 Method | Description
@@ -140,8 +140,9 @@ A full set of detailed information is available via the [`android.telephony`](ht
 
 * There are minimum device SDK requirements. API level 17 is the current minimum to take advantage of this specific functionality. Plus, this project requires a minimum of SDK 21 or greater. Be aware of how you set the `minSdkVersion` in the AndroidManifest, for example: `<uses-sdk android:minSdkVersion="21" android:targetSdkVersion="22" />`
 * Activating cellular data may result in additional network charges for the user.
-* This information is not gauranteed. 
-* To make use of this data requires access to a cell tower database. We don't provide cell tower location data, however there are databases available. One example provider is the [OpenCellId organization](http://wiki.opencellid.org/wiki/View_the_data). 
+* This information is not gauranteed.
+* It is a known native Android issue that the `TelephonyManager` API may not work correctly on all devices. 
+* To make use of this data for locating a cell tower requires access to a cell tower database. We don't provide cell tower location data, however there are databases available. One example provider is the [OpenCellId organization](http://wiki.opencellid.org/wiki/View_the_data). 
 
 Examples:
 
