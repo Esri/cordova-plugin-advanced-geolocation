@@ -43,6 +43,7 @@
         <!-- Copy over the Java source files -->
         <source-file src="src/com/esri/cordova/geolocation/AdvancedGeolocation.java" target-dir="src/com/esri/cordova/geolocation" />
 
+        <source-file src="src/com/esri/cordova/geolocation/controllers/CellLocationController.java" target-dir="src/com/esri/cordova/geolocation/controllers" />
         <source-file src="src/com/esri/cordova/geolocation/controllers/GPSController.java" target-dir="src/com/esri/cordova/geolocation/controllers" />
         <source-file src="src/com/esri/cordova/geolocation/controllers/NetworkLocationController.java" target-dir="src/com/esri/cordova/geolocation/controllers" />
 
