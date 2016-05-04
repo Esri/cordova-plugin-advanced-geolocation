@@ -1,5 +1,12 @@
 # cordova-plugin-advanced-geolocation - Changelog
 
+## Version 0.3.1 - May 4, 2016
+
+No breaking changes.
+
+**Bug Fixes**
+* Adds missing CellLocationController to plugin.xml
+
 ## Version 0.3.0 - April 22, 2016
 
 No breaking changes.
