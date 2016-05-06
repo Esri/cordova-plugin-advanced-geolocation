@@ -1,5 +1,16 @@
 # cordova-plugin-advanced-geolocation - Changelog
 
+## Version 0.4.0 - May 6, 2016
+
+No breaking changes.
+
+**Enhancements**
+* Updated API docs to correctly reflect what data is returns by GPS and Network.
+
+**Bug Fixes**
+* GPSController no longer returns a fake location if parsedLocation is null.
+* NetworkController also no longer returns a fake location if parsedLocation is null. 
+
 ## Version 0.3.1 - May 4, 2016
 
 No breaking changes.
