@@ -125,14 +125,10 @@ public final class GPSController implements Runnable {
                     // If the provider is disabled or currently unavailable then null is returned
                     // Some devices will return null if the GPS is still warming up and hasn't gotten
                     // a full signal lock yet.
-                    if(location == null) {
-                        // Basically return all zeros as a standard practice
-                        parsedLocation = "{\"provider\":\"gps\",\"latitude\":\"0.0\",\"longitude\":\"0.0\",\"altitude\":\"0.0\",\"accuracy\":\"50.0\",\"bearing\":\"0.0\",\"speed\":\"0.0\",\"timestamp\":\"0\",\"cached\":\"true\"}";
-                    }
-                    else {
+                    if(location != null) {
                         parsedLocation = JSONHelper.locationJSON(LocationManager.GPS_PROVIDER, location, true);
+                        sendCallback(PluginResult.Status.OK, parsedLocation);
                     }
-                    sendCallback(PluginResult.Status.OK, parsedLocation);
                 }
             }
         }
