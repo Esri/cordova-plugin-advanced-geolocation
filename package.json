@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-advanced-geolocation",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Android geolocation plugin for both GPS or NETWORK-based location providers.",
   "cordova": {
     "id": "cordova-plugin-advanced-geolocation",

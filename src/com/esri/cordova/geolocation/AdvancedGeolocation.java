@@ -53,6 +53,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
     private static final String TAG = "GeolocationPlugin";
     private static final String SHARED_PREFS_NAME = "LocationSettings";
     private static final String SHARED_PREFS_ACTION = "action";
+    private static final int MIN_API_LEVEL = 18;
 
     private static long _minDistance = 0;
     private static long _minTime = 0;
@@ -142,8 +143,9 @@ public class AdvancedGeolocation extends CordovaPlugin {
             cordova.getThreadPool().execute(_networkLocationController);
 
             // Reference: https://developer.android.com/reference/android/telephony/TelephonyManager.html#getAllCellInfo()
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP){
-                Log.e(TAG, "Cell Data option is not available on Android API versions < 17");
+            // Reference: https://developer.android.com/reference/android/telephony/CellIdentityWcdma.html (added at API 18)
+            if (Build.VERSION.SDK_INT < MIN_API_LEVEL){
+                Log.e(TAG, "Cell Data option is not available on Android API versions < 18");
             }
             else {
                 _cellLocationController = new CellLocationController(networkEnabled,_cordova,_callbackContext);
@@ -173,9 +175,10 @@ public class AdvancedGeolocation extends CordovaPlugin {
         if(_providers.equalsIgnoreCase(PROVIDERS_CELL)){
 
             // Reference: https://developer.android.com/reference/android/telephony/TelephonyManager.html#getAllCellInfo()
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP){
-                Log.e(TAG, "Cell Data option is not available on Android API versions < 17");
-                sendCallback(PluginResult.Status.ERROR, "Cell Data option is not available on Android API versions < 17");
+            // Reference: https://developer.android.com/reference/android/telephony/CellIdentityWcdma.html
+            if (Build.VERSION.SDK_INT < MIN_API_LEVEL){
+                Log.e(TAG, "Cell Data option is not available on Android API versions < 18");
+                sendCallback(PluginResult.Status.ERROR, "Cell Data option is not available on Android API versions < 18");
             }
             else {
                 _cellLocationController = new CellLocationController(networkEnabled,_cordova,_callbackContext);
