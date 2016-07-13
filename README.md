@@ -10,7 +10,11 @@ This plugin is available via [npm](https://www.npmjs.com/package/cordova-plugin-
 
 ##Supported Platforms
 
-**Android-only.** This plugin is designed for Android API 5.0.0 (Lollipop / API Level 21) and greater. Cordova supports the following android [releases](https://github.com/apache/cordova-android/releases).
+**Android-only.** This plugin is designed for Android versions between Android 5.0.0 (Lollipop / API Level 21) and Android 6.x (Marshmallow / API Level 23). 
+
+**IMPORTANT** At Android N (OS version 7) there have been many changes to how GPS is implemented that are not compatible with the current version of this library. See the [issues](https://github.com/Esri/cordova-plugin-advanced-geolocation/issues) list for the most current information.
+
+Cordova supports the following android [releases](https://github.com/apache/cordova-android/releases).
 
 ##Quick Start!
 
@@ -45,6 +49,10 @@ External consumer GPS devices may help provide better accuracy, faster location 
 If your requirements specifically call for less than 3 meter accuracy then consider using a commercial, external high-accuracy GPS such as the Trimble R1 and slave it to your device via Bluetooth.  
 
 **PRIVACY WARNING** Keep in mind the [W3C security and privacy considerations](http://dev.w3.org/geo/api/spec-source.html#security). This plugin uses native geolocation functionality only. Users will not automatically see a W3C Geolocation prompt, they will only get native Android prompts. The plugin requires the following Android User Permissions: [ACCESS_COARSE_LOCATION](http://developer.android.com/reference/android/Manifest.permission.html#ACCESS_COARSE_LOCATION), [ACCESS_FINE_LOCATION](http://developer.android.com/reference/android/Manifest.permission.html#ACCESS_FINE_LOCATION), [ACCESS_NETWORK_STATE](http://developer.android.com/reference/android/Manifest.permission.html#ACCESS_NETWORK_STATE), [ACCESS_WIFI_STATE](http://developer.android.com/reference/android/Manifest.permission.html#ACCESS_WIFI_STATE) and [INTERNET](http://developer.android.com/reference/android/Manifest.permission.html#INTERNET).
+
+#API Reference
+
+Click [here](api_reference.md) to read all about it.
 
 
 ##Example Usage
@@ -127,10 +135,6 @@ The following geolocation data may be exposed and accessible by this API if the 
 * Real-time Network location triangulation
 * Cached Network location
 * Cell tower information (type of information varies by device, OS version and cell service provider)
-
-#API Reference
-
-Click [here](api_reference.md) to read all about it.
 
 ## FAQ
 

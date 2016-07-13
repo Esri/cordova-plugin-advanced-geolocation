@@ -2,6 +2,8 @@
 
 This geolocation API is multi-threaded for maximum efficiency and reduced impact on user experience.
 
+**Reminder** This project currently only supports API Level 21 to API Level 23. Android N (API 24) brings breaking changes in terms of how GPS is implemented. Be sure to set the `minSdkVersion` in the AndroidManifest, for example: `<uses-sdk android:minSdkVersion="21" android:targetSdkVersion="22" />`
+
 **IMPORTANT - READ THIS FIRST!** There are important differences between GPS Provider data, Network Provider data and Cellular data. It can be confusing. 
 
 * GPS Provider data is focused on providing a device location using latitude and longitude information via a GPS.
@@ -142,7 +144,7 @@ A full set of detailed information is available via the [`android.telephony`](ht
 
 **IMPORTANT** Please make note of the following:
 
-* There are minimum device SDK requirements. API level 17 is the current minimum to take advantage of this specific functionality. Plus, this project requires a minimum of SDK 21 or greater. Be aware of how you set the `minSdkVersion` in the AndroidManifest, for example: `<uses-sdk android:minSdkVersion="21" android:targetSdkVersion="22" />`
+* There are minimum device SDK requirements. API level 17 is the current minimum to take advantage of this specific functionality. The plugin will turn of this functionality if the API level is less than 17. 
 * Activating cellular data may result in additional network charges for the user.
 * This information is not gauranteed.
 * The `TelephonyManager` API may not work correctly on all devices. 
