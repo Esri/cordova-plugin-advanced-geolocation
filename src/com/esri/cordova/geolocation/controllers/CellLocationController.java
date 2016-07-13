@@ -16,6 +16,11 @@
  */
 package com.esri.cordova.geolocation.controllers;
 
+/**
+ * IMPORTANT: This Class is only compatible with API Level 17 or greater
+ * Reference: https://developer.android.com/reference/android/telephony/CellInfo.html
+ */
+
 import android.content.Context;
 import android.os.Build;
 import android.os.Looper;

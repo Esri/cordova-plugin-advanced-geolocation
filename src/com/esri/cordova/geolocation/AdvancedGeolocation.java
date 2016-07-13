@@ -27,6 +27,7 @@ import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
@@ -140,8 +141,14 @@ public class AdvancedGeolocation extends CordovaPlugin {
                     _cordova, _callbackContext, _minDistance, _minTime, _useCache, _buffer, _bufferSize);
             cordova.getThreadPool().execute(_networkLocationController);
 
-            _cellLocationController = new CellLocationController(networkEnabled,_cordova,_callbackContext);
-            cordova.getThreadPool().execute(_cellLocationController);
+            // Reference: https://developer.android.com/reference/android/telephony/TelephonyManager.html#getAllCellInfo()
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP){
+                Log.e(TAG, "Cell Data option is not available on Android API versions < 17");
+            }
+            else {
+                _cellLocationController = new CellLocationController(networkEnabled,_cordova,_callbackContext);
+                cordova.getThreadPool().execute(_cellLocationController);
+            }
         }
         if(_providers.equalsIgnoreCase(PROVIDERS_SOME)){
             _gpsController = new GPSController(
@@ -164,8 +171,16 @@ public class AdvancedGeolocation extends CordovaPlugin {
             cordova.getThreadPool().execute(_networkLocationController);
         }
         if(_providers.equalsIgnoreCase(PROVIDERS_CELL)){
-            _cellLocationController = new CellLocationController(networkEnabled,_cordova,_callbackContext);
-            cordova.getThreadPool().execute(_cellLocationController);
+
+            // Reference: https://developer.android.com/reference/android/telephony/TelephonyManager.html#getAllCellInfo()
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP){
+                Log.e(TAG, "Cell Data option is not available on Android API versions < 17");
+                sendCallback(PluginResult.Status.ERROR, "Cell Data option is not available on Android API versions < 17");
+            }
+            else {
+                _cellLocationController = new CellLocationController(networkEnabled,_cordova,_callbackContext);
+                cordova.getThreadPool().execute(_cellLocationController);
+            }
         }
     }
 

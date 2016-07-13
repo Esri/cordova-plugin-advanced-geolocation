@@ -1,5 +1,13 @@
 # cordova-plugin-advanced-geolocation - Changelog
 
+## Version 0.5.0 - July 13, 2016
+
+No breaking changes.
+
+**Enhancements**
+* Disable cellular data configuration option if Android API Level is less than v17. This functionality is not available on those phones and could cause app to crash.
+* Updates docs. Added notices that Android N will have breaking changes in terms of how GPS is implemented.
+
 ## Version 0.4.0 - May 6, 2016
 
 No breaking changes.

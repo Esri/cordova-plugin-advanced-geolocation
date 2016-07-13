@@ -180,6 +180,9 @@ public final class GPSController implements Runnable {
     }
 
     private static InitStatus setGPSStatusListener(){
+
+        // IMPORTANT: The GpsStatus.Listener Interface is deprecated at API 24.
+        // Reference: https://developer.android.com/reference/android/location/package-summary.html
         _gpsStatusListener = new GpsStatus.Listener() {
 
             @Override
