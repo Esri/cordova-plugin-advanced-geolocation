@@ -1,5 +1,12 @@
 # cordova-plugin-advanced-geolocation - Changelog
 
+## Version 0.5.1 - July 13, 2016
+
+No breaking changes.
+
+**Enhancements**
+* Changed cell data configuration option verification from API 17 to 18 as per the Android SDK docs. CellIdentityWcdma was added at API 18 so that's now the least common denominator.
+
 ## Version 0.5.0 - July 13, 2016
 
 No breaking changes.
