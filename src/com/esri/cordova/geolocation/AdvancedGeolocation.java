@@ -21,9 +21,13 @@ import com.esri.cordova.geolocation.fragments.GPSAlertDialogFragment;
 import com.esri.cordova.geolocation.controllers.GPSController;
 import com.esri.cordova.geolocation.controllers.NetworkLocationController;
 import com.esri.cordova.geolocation.fragments.NetworkUnavailableDialogFragment;
+
+import android.Manifest;
+import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -69,12 +73,14 @@ public class AdvancedGeolocation extends CordovaPlugin {
     private static CellLocationController _cellLocationController = null;
     private static LocationManager _locationManager;
     private static CordovaInterface _cordova;
+    private static Activity _cordovaActivity;
     private static CallbackContext _callbackContext;
 
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
         _cordova = cordova;
+        _cordovaActivity = cordova.getActivity();
         removeActionPreferences();
         Log.d(TAG, "Initialized");
     }
@@ -98,6 +104,10 @@ public class AdvancedGeolocation extends CordovaPlugin {
         final boolean networkLocationEnabled = _locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
         final boolean gpsEnabled = _locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         final boolean networkEnabled = isInternetConnected(_cordova.getActivity().getApplicationContext());
+
+        if(!checkPreferences()){
+            Log.e(TAG, "NO permission!");
+        }
 
         // If warnings are disabled then skip initializing alert dialog fragments
         if(!_noWarn && (!networkLocationEnabled || !gpsEnabled || !networkEnabled)){
@@ -324,6 +334,22 @@ public class AdvancedGeolocation extends CordovaPlugin {
             final DialogFragment networkUnavailableFragment = new NetworkUnavailableDialogFragment();
             networkUnavailableFragment.show(_cordova.getActivity().getFragmentManager(), "NetworkUnavailableAlert");
         }
+    }
+
+    private Boolean checkPreferences(){
+
+        Boolean permsValid = true;
+
+        if (Build.VERSION.SDK_INT >= 23) {
+            final int COARSE_PERMS = _cordovaActivity.getApplicationContext().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
+            final int FINE_PERMS = _cordovaActivity.getApplicationContext().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+
+            if (COARSE_PERMS != PackageManager.PERMISSION_GRANTED || FINE_PERMS != PackageManager.PERMISSION_GRANTED) {
+                permsValid = false;
+            }
+        }
+
+        return permsValid;
     }
 
     /**
