@@ -100,10 +100,10 @@ public class AdvancedGeolocation extends CordovaPlugin {
     }
 
     private boolean runAction(final String action){
-        _locationManager = (LocationManager) _cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);
+        _locationManager = (LocationManager) _cordovaActivity.getSystemService(Context.LOCATION_SERVICE);
         final boolean networkLocationEnabled = _locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
         final boolean gpsEnabled = _locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        final boolean networkEnabled = isInternetConnected(_cordova.getActivity().getApplicationContext());
+        final boolean networkEnabled = isInternetConnected(_cordovaActivity.getApplicationContext());
 
         if(!checkPreferences()){
             Log.e(TAG, "NO permission!");
@@ -141,7 +141,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
         // Misc. note: If you see the message "Attempted to send a second callback for ID:" then you need
         // to make sure to set pluginResult.setKeepCallback(true);
 
-        final boolean networkEnabled = isInternetConnected(_cordova.getActivity().getApplicationContext());
+        final boolean networkEnabled = isInternetConnected(_cordovaActivity.getApplicationContext());
 
         if(_providers.equalsIgnoreCase(PROVIDERS_ALL)){
             _gpsController = new GPSController(
@@ -245,7 +245,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
             startLocation();
         }
         else {
-            final SharedPreferences preferences = _cordova.getActivity().getSharedPreferences(SHARED_PREFS_NAME,0);
+            final SharedPreferences preferences = _cordovaActivity.getSharedPreferences(SHARED_PREFS_NAME,0);
             final String action = preferences.getString(SHARED_PREFS_ACTION,"");
             if(!action.equals("")){
                 runAction(action);
@@ -276,7 +276,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
             stopLocation();
             removeActionPreferences();
             shutdownAndAwaitTermination(_cordova.getThreadPool());
-            _cordova.getActivity().finish();
+            _cordovaActivity.finish();
         }
     }
 
@@ -325,14 +325,14 @@ public class AdvancedGeolocation extends CordovaPlugin {
             sendCallback(PluginResult.Status.ERROR, "Location services not enabled!");
 
             final DialogFragment gpsFragment = new GPSAlertDialogFragment();
-            gpsFragment.show(_cordova.getActivity().getFragmentManager(), "GPSAlert");
+            gpsFragment.show(_cordovaActivity.getFragmentManager(), "GPSAlert");
         }
 
         if(!celllularEnabled){
             sendCallback(PluginResult.Status.ERROR, "Internet not available!");
 
             final DialogFragment networkUnavailableFragment = new NetworkUnavailableDialogFragment();
-            networkUnavailableFragment.show(_cordova.getActivity().getFragmentManager(), "NetworkUnavailableAlert");
+            networkUnavailableFragment.show(_cordovaActivity.getFragmentManager(), "NetworkUnavailableAlert");
         }
     }
 
@@ -379,11 +379,11 @@ public class AdvancedGeolocation extends CordovaPlugin {
     }
 
     private void removeActionPreferences(){
-        _cordova.getActivity().getSharedPreferences(SHARED_PREFS_NAME,0).edit().remove(SHARED_PREFS_ACTION).commit();
+        _cordovaActivity.getSharedPreferences(SHARED_PREFS_NAME,0).edit().remove(SHARED_PREFS_ACTION).commit();
     }
 
     private void setSharedPreferences(String action){
-        SharedPreferences settings = _cordova.getActivity().getSharedPreferences(SHARED_PREFS_NAME, 0);
+        SharedPreferences settings = _cordovaActivity.getSharedPreferences(SHARED_PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
 
         // Let's us differentiate between application paused and application start new.
