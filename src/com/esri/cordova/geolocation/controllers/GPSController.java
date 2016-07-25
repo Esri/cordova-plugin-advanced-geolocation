@@ -17,8 +17,8 @@
 package com.esri.cordova.geolocation.controllers;
 
 
-import android.location.GpsStatus;
 import android.content.Context;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -105,16 +105,16 @@ public final class GPSController implements Runnable {
                 _locationDataBuffer = new LocationDataBuffer(_bufferSize);
             }
 
-            final InitStatus l2 = setLocationListenerGPSProvider();
-            InitStatus l3 = new InitStatus();
+            final InitStatus gpsListener = setLocationListenerGPSProvider();
+            InitStatus satelliteListener = new InitStatus();
 
             if(_returnSatelliteData){
-               l3 = setGPSStatusListener();
+               satelliteListener = setGPSStatusListener();
             }
 
-            if(!l2.success || !l3.success){
+            if(!gpsListener.success || !satelliteListener.success){
                 sendCallback(PluginResult.Status.ERROR,
-                        JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, l2.exception + ", " + l3.exception));
+                        JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, gpsListener.exception + ", " + satelliteListener.exception));
             }
             else {
                 // Return cache immediate if requested, otherwise wait for a location provider
@@ -290,7 +290,7 @@ public final class GPSController implements Runnable {
                 _locationManager.requestLocationUpdates(
                         LocationManager.GPS_PROVIDER, _minTime, _minDistance, _locationListenerGPSProvider);
             }
-            catch(Exception exc){
+            catch(SecurityException exc){
                 Log.d(TAG, "Unable to start GPS provider. " + exc.getMessage());
                 status.success = false;
                 status.exception = exc.getMessage();
