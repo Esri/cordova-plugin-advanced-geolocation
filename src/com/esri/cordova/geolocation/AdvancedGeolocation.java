@@ -16,23 +16,23 @@
  */
 package com.esri.cordova.geolocation;
 
-import com.esri.cordova.geolocation.controllers.CellLocationController;
-import com.esri.cordova.geolocation.fragments.GPSAlertDialogFragment;
-import com.esri.cordova.geolocation.controllers.GPSController;
-import com.esri.cordova.geolocation.controllers.NetworkLocationController;
-import com.esri.cordova.geolocation.fragments.NetworkUnavailableDialogFragment;
-
 import android.Manifest;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.util.Log;
+
+import com.esri.cordova.geolocation.controllers.CellLocationController;
+import com.esri.cordova.geolocation.controllers.GPSController;
+import com.esri.cordova.geolocation.controllers.NetworkLocationController;
+import com.esri.cordova.geolocation.fragments.GPSAlertDialogFragment;
+import com.esri.cordova.geolocation.fragments.NetworkUnavailableDialogFragment;
+import com.esri.cordova.geolocation.utils.PreferencesHelper;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -54,6 +54,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
     public static final String PROVIDERS_GPS = "gps";
     public static final String PROVIDERS_NETWORK = "network";
     public static final String PROVIDERS_CELL = "cell";
+
     private static final String TAG = "GeolocationPlugin";
     private static final String SHARED_PREFS_NAME = "LocationSettings";
     private static final String SHARED_PREFS_ACTION = "action";
@@ -99,20 +100,44 @@ public class AdvancedGeolocation extends CordovaPlugin {
         return runAction(action);
     }
 
+    public void onRequestPermissionResult(int requestCode, String[] permissions,
+                                          int[] grantResults) throws JSONException
+    {
+        if(requestCode == 100){
+            Log.d(TAG,"YES");
+        }
+    }
+
     private boolean runAction(final String action){
+
+        // NOTE: LocationManager.isProviderEnabled only verifies if the provider is enabled in the Settings menu!
         _locationManager = (LocationManager) _cordovaActivity.getSystemService(Context.LOCATION_SERVICE);
         final boolean networkLocationEnabled = _locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
         final boolean gpsEnabled = _locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         final boolean networkEnabled = isInternetConnected(_cordovaActivity.getApplicationContext());
 
-        if(!checkPreferences()){
-            Log.e(TAG, "NO permission!");
-        }
+//        final String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
+//
+//        final PreferencesHelper preferencesHelper = new PreferencesHelper(_cordova, this);
+//        Log.d(TAG, "MANIFEST: " + preferencesHelper.checkManifest().toString());
 
-        // If warnings are disabled then skip initializing alert dialog fragments
-        if(!_noWarn && (!networkLocationEnabled || !gpsEnabled || !networkEnabled)){
-            alertDialog(gpsEnabled, networkLocationEnabled, networkEnabled);
-            return true;
+        if (Build.VERSION.SDK_INT >= 23) {
+//            _activity.requestPermissions(perms, REQUEST_CODE_ENABLE_PERMISSION);
+            if(_cordova.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) || _cordova.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)){
+                //TODO
+            }
+            else {
+                final String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
+                _cordova.requestPermissions(this, 100, perms);
+                return true;
+            }
+        }
+        else {
+            // If warnings are disabled then skip initializing alert dialog fragments
+            if(!_noWarn && (!networkLocationEnabled || !gpsEnabled || !networkEnabled)){
+                alertDialog(gpsEnabled, networkLocationEnabled, networkEnabled);
+                return true;
+            }
         }
 
         if(networkLocationEnabled || gpsEnabled) {
@@ -336,26 +361,10 @@ public class AdvancedGeolocation extends CordovaPlugin {
         }
     }
 
-    private Boolean checkPreferences(){
-
-        Boolean permsValid = true;
-
-        if (Build.VERSION.SDK_INT >= 23) {
-            final int COARSE_PERMS = _cordovaActivity.getApplicationContext().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
-            final int FINE_PERMS = _cordovaActivity.getApplicationContext().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
-
-            if (COARSE_PERMS != PackageManager.PERMISSION_GRANTED || FINE_PERMS != PackageManager.PERMISSION_GRANTED) {
-                permsValid = false;
-            }
-        }
-
-        return permsValid;
-    }
-
     /**
      * Check for <code>Network</code> connection.
      * Checks for generic Exceptions and writes them to logcat as <code>CheckConnectivity Exception</code>.
-     * Make sure AndroidManifest.xml has appropriate permissions. API 23+ compliant.
+     * Make sure AndroidManifest.xml has appropriate permissions.
      * @param con Application context
      * @return Boolean
      */
