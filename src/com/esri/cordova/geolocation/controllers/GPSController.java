@@ -30,6 +30,7 @@ import android.util.Log;
 import com.esri.cordova.geolocation.model.Coordinate;
 import com.esri.cordova.geolocation.model.InitStatus;
 import com.esri.cordova.geolocation.model.LocationDataBuffer;
+import com.esri.cordova.geolocation.utils.ErrorMessages;
 import com.esri.cordova.geolocation.utils.JSONHelper;
 
 import org.apache.cordova.CallbackContext;
@@ -119,7 +120,16 @@ public final class GPSController implements Runnable {
             else {
                 // Return cache immediate if requested, otherwise wait for a location provider
                 if(_returnCache){
-                    final Location location = _locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+                    Location location = null;
+
+                    try {
+                        location = _locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    }
+                    catch(SecurityException exc){
+                        Log.e(TAG, exc.getMessage());
+                    }
+
                     final String parsedLocation;
 
                     // If the provider is disabled or currently unavailable then null is returned
@@ -144,7 +154,14 @@ public final class GPSController implements Runnable {
 
         if(_locationManager != null){
             if(_locationListenerGPSProvider != null){
-                _locationManager.removeUpdates(_locationListenerGPSProvider);
+
+                try {
+                    _locationManager.removeUpdates(_locationListenerGPSProvider);
+                }
+                catch(SecurityException exc){
+                    Log.e(TAG, exc.getMessage());
+                }
+
                 _locationListenerGPSProvider = null;
             }
 
@@ -299,7 +316,7 @@ public final class GPSController implements Runnable {
         else {
             //GPS not enabled
             status.success = false;
-            status.exception = "GPS provider not enabled";
+            status.exception = ErrorMessages.GPS_UNAVAILABLE;
         }
 
         return status;
