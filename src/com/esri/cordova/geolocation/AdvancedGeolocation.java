@@ -68,12 +68,12 @@ public class AdvancedGeolocation extends CordovaPlugin {
     private static boolean _useCache;
     private static boolean _returnSatelliteData = false;
     private static boolean _buffer = false;
+    private static boolean _isAppInitialized = false;
     private static int _bufferSize = 0;
 
     private static GPSController _gpsController = null;
     private static NetworkLocationController _networkLocationController = null;
     private static CellLocationController _cellLocationController = null;
-    private static LocationManager _locationManager;
     private static CordovaInterface _cordova;
     private static Activity _cordovaActivity;
     private static CallbackContext _callbackContext;
@@ -93,7 +93,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
         Log.d(TAG, "Action = " + action);
 
         // Save this action so we can refer to it when the app restarts
-        setSharedPreferences(SHARED_PREFS_KEY, action);
+        setSharedPreferences(SHARED_PREFS_ACTION, action);
 
         if (args != null) {
             parseArgs(args);
@@ -104,20 +104,12 @@ public class AdvancedGeolocation extends CordovaPlugin {
 
     private boolean runAction(final String action){
 
-        // NOTE: LocationManager.isProviderEnabled only verifies if the provider is enabled in the Settings menu!
-        _locationManager = (LocationManager) _cordovaActivity.getSystemService(Context.LOCATION_SERVICE);
-        final boolean networkLocationEnabled = _locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        final boolean gpsEnabled = _locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        final boolean networkEnabled = isInternetConnected(_cordovaActivity.getApplicationContext());
-
-//        final String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
-//
-//        final PreferencesHelper preferencesHelper = new PreferencesHelper(_cordova, this);
-//        Log.d(TAG, "MANIFEST: " + preferencesHelper.checkManifest().toString());
+        _isAppInitialized = true;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
             // Reference: Permission Groups https://developer.android.com/guide/topics/security/permissions.html#normal-dangerous
+            // As of July 2016 - ACCESS_WIFI_STATE and ACCESS_NETWORK_STATE are not considered dangerous permissions
             if(_cordova.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) || _cordova.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)){
                 //TODO
             }
@@ -128,6 +120,11 @@ public class AdvancedGeolocation extends CordovaPlugin {
             }
         }
         else {
+            final LocationManager locationManager = (LocationManager) _cordovaActivity.getSystemService(Context.LOCATION_SERVICE);
+            final boolean networkLocationEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+            final boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            final boolean networkEnabled = isInternetConnected(_cordovaActivity.getApplicationContext());
+
             // If warnings are disabled then skip initializing alert dialog fragments
             if(!_noWarn && (!networkLocationEnabled || !gpsEnabled || !networkEnabled)){
                 alertDialog(gpsEnabled, networkLocationEnabled, networkEnabled);
@@ -239,7 +236,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
      */
     private void stopLocation(){
 
-        if(_locationManager != null){
+        if(_isAppInitialized){
             if(_gpsController != null){
                 // Gracefully attempt to stop location
                 _gpsController.stopLocation();
@@ -254,9 +251,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
                 // make sure there are no references
                 _networkLocationController = null;
             }
-
-            // make sure there are no references
-            _locationManager = null;
+            _isAppInitialized = false;
         }
 
         // CellLocationController does not require LocationManager
@@ -279,12 +274,12 @@ public class AdvancedGeolocation extends CordovaPlugin {
      */
     public void onResume(boolean multitasking){
         Log.d(TAG, "onResume");
-        if(_locationManager != null){
+        if(_isAppInitialized){
             startLocation();
         }
         else {
             final SharedPreferences preferences = _cordovaActivity.getSharedPreferences(SHARED_PREFS_KEY,0);
-            final String action = preferences.getString(SHARED_PREFS_ACTION,"");
+            final String action = preferences.getString(SHARED_PREFS_KEY,"");
             if(!action.equals("")){
                 runAction(action);
             }
@@ -293,7 +288,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
 
     public void onStart(){
         Log.d(TAG, "onStart");
-        if(_locationManager != null){
+        if(_isAppInitialized){
             startLocation();
         }
     }
