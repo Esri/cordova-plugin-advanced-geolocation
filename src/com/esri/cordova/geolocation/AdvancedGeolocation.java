@@ -33,7 +33,6 @@ import com.esri.cordova.geolocation.controllers.NetworkLocationController;
 import com.esri.cordova.geolocation.fragments.GPSAlertDialogFragment;
 import com.esri.cordova.geolocation.fragments.NetworkUnavailableDialogFragment;
 import com.esri.cordova.geolocation.utils.ErrorMessages;
-import com.esri.cordova.geolocation.utils.PreferencesHelper;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -134,6 +133,10 @@ public class AdvancedGeolocation extends CordovaPlugin {
             }
         }
 
+        return handleStartActions(action);
+    }
+
+    private boolean handleStartActions(final String action){
         if(action.equals("start")){
             startLocation();
             return true;
@@ -149,7 +152,6 @@ public class AdvancedGeolocation extends CordovaPlugin {
         else {
             return false;
         }
-
     }
 
     public void onRequestPermissionResult(int requestCode, String[] permissions,
@@ -179,7 +181,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
             // Reference: https://developer.android.com/reference/android/telephony/TelephonyManager.html#getAllCellInfo()
             // Reference: https://developer.android.com/reference/android/telephony/CellIdentityWcdma.html (added at API 18)
             if (Build.VERSION.SDK_INT < MIN_API_LEVEL){
-                Log.e(TAG, "Cell Data option is not available on Android API versions < 18");
+                Log.w(TAG, ErrorMessages.CELLDATA_NOT_ALLOWED);
             }
             else {
                 _cellLocationController = new CellLocationController(networkEnabled,_cordova,_callbackContext);
@@ -211,8 +213,8 @@ public class AdvancedGeolocation extends CordovaPlugin {
             // Reference: https://developer.android.com/reference/android/telephony/TelephonyManager.html#getAllCellInfo()
             // Reference: https://developer.android.com/reference/android/telephony/CellIdentityWcdma.html
             if (Build.VERSION.SDK_INT < MIN_API_LEVEL){
-                Log.e(TAG, "Cell Data option is not available on Android API versions < 18");
-                sendCallback(PluginResult.Status.ERROR, "Cell Data option is not available on Android API versions < 18");
+                Log.w(TAG, ErrorMessages.CELLDATA_NOT_ALLOWED);
+                sendCallback(PluginResult.Status.ERROR, ErrorMessages.CELLDATA_NOT_ALLOWED);
             }
             else {
                 _cellLocationController = new CellLocationController(networkEnabled,_cordova,_callbackContext);
@@ -259,7 +261,8 @@ public class AdvancedGeolocation extends CordovaPlugin {
     }
 
     /**
-     * This is a device event
+     * Retrieves shared preferences to find out what action was requested when the app
+     * originally launched. Resumes based on that last action.
      * @param multitasking Unused in this API. Flag indicating if multitasking is turned on for app
      * and is inherited from Cordova.
      */
@@ -346,7 +349,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
     private void alertDialog(boolean gpsEnabled, boolean networkLocationEnabled, boolean celllularEnabled){
 
         if(!gpsEnabled || !networkLocationEnabled){
-            sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATIONSERVICES_UNAVAILABLE);
+            sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_UNAVAILABLE);
 
             final DialogFragment gpsFragment = new GPSAlertDialogFragment();
             gpsFragment.show(_cordovaActivity.getFragmentManager(), "GPSAlert");
@@ -380,7 +383,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
             }
         }
         catch(Exception e){
-            Log.d(TAG,"CheckConnectivity Exception: " + e.getMessage());
+            Log.e(TAG,"CheckConnectivity Exception: " + e.getMessage());
         }
 
         return connected;
@@ -390,6 +393,11 @@ public class AdvancedGeolocation extends CordovaPlugin {
         _cordovaActivity.getSharedPreferences(SHARED_PREFS_NAME,0).edit().remove(SHARED_PREFS_ACTION).commit();
     }
 
+    /**
+     * Stores the last action specified at runtime, so that it can be retrieved after the app
+     * is minimized then resumed.
+     * @param action
+     */
     private void setSharedPreferences(String action){
         SharedPreferences settings = _cordovaActivity.getSharedPreferences(SHARED_PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
@@ -417,7 +425,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
 
             }
             catch (Exception exc){
-                Log.d(TAG,"Execute has incorrect config arguments: " + exc.getMessage());
+                Log.d(TAG, ErrorMessages.INCORRECT_CONFIG_ARGS + ", " + exc.getMessage());
                 sendCallback(PluginResult.Status.ERROR, ErrorMessages.INCORRECT_CONFIG_ARGS + ", " + exc.getMessage());
             }
         }
