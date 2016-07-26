@@ -20,6 +20,13 @@ package com.esri.cordova.geolocation.utils;
  * This is a central repository for managing error messages and reducing duplication.
  */
 public class ErrorMessages {
-    public static final String NETWORK_UNAVAILABLE = "ERROR 01: Network location requested but network is not available";
-    public static final String GPS_UNAVAILABLE = "ERROR 02: GPS location requested but GPS is not available";
+
+    // Location request errors are 100 series
+    public static final String NETWORK_UNAVAILABLE = "ERROR 101: Network location requested but network is not available";
+    public static final String GPS_UNAVAILABLE = "ERROR 102: GPS location requested but GPS is not available";
+    public static final String CELLDATA_UNAVALABLE = "ERROR 103: Cell data requested but unavailable. Check internet connection";
+    public static final String LOCATIONSERVICES_UNAVAILABLE = "ERROR 104: Neither GPS nor network location is available";
+
+    // Configuration errors are 900 series
+    public static final String INCORRECT_CONFIG_ARGS = "ERROR 901: There was a problem with the optional configuration arguments";
 }

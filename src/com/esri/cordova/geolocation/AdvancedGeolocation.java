@@ -32,6 +32,7 @@ import com.esri.cordova.geolocation.controllers.GPSController;
 import com.esri.cordova.geolocation.controllers.NetworkLocationController;
 import com.esri.cordova.geolocation.fragments.GPSAlertDialogFragment;
 import com.esri.cordova.geolocation.fragments.NetworkUnavailableDialogFragment;
+import com.esri.cordova.geolocation.utils.ErrorMessages;
 import com.esri.cordova.geolocation.utils.PreferencesHelper;
 
 import org.apache.cordova.CallbackContext;
@@ -121,7 +122,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
 //        final PreferencesHelper preferencesHelper = new PreferencesHelper(_cordova, this);
 //        Log.d(TAG, "MANIFEST: " + preferencesHelper.checkManifest().toString());
 
-        if (Build.VERSION.SDK_INT >= 23) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //            _activity.requestPermissions(perms, REQUEST_CODE_ENABLE_PERMISSION);
             if(_cordova.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) || _cordova.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)){
                 //TODO
@@ -140,25 +141,22 @@ public class AdvancedGeolocation extends CordovaPlugin {
             }
         }
 
-        if(networkLocationEnabled || gpsEnabled) {
-            if(action.equals("start")){
-                startLocation();
-                return true;
-            }
-            if(action.equals("stop")){
-                stopLocation();
-                return true;
-            }
-            if(action.equals("kill")){
-                onDestroy();
-                return true;
-            }
-            else {
-                return false;
-            }
+        if(action.equals("start")){
+            startLocation();
+            return true;
+        }
+        if(action.equals("stop")){
+            stopLocation();
+            return true;
+        }
+        if(action.equals("kill")){
+            onDestroy();
+            return true;
+        }
+        else {
+            return false;
         }
 
-        return false;
     }
 
     private void startLocation(){
@@ -347,14 +345,14 @@ public class AdvancedGeolocation extends CordovaPlugin {
     private void alertDialog(boolean gpsEnabled, boolean networkLocationEnabled, boolean celllularEnabled){
 
         if(!gpsEnabled || !networkLocationEnabled){
-            sendCallback(PluginResult.Status.ERROR, "Location services not enabled!");
+            sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATIONSERVICES_UNAVAILABLE);
 
             final DialogFragment gpsFragment = new GPSAlertDialogFragment();
             gpsFragment.show(_cordovaActivity.getFragmentManager(), "GPSAlert");
         }
 
         if(!celllularEnabled){
-            sendCallback(PluginResult.Status.ERROR, "Internet not available!");
+            sendCallback(PluginResult.Status.ERROR, ErrorMessages.CELLDATA_UNAVALABLE);
 
             final DialogFragment networkUnavailableFragment = new NetworkUnavailableDialogFragment();
             networkUnavailableFragment.show(_cordovaActivity.getFragmentManager(), "NetworkUnavailableAlert");
@@ -419,6 +417,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
             }
             catch (Exception exc){
                 Log.d(TAG,"Execute has incorrect config arguments: " + exc.getMessage());
+                sendCallback(PluginResult.Status.ERROR, ErrorMessages.INCORRECT_CONFIG_ARGS + ", " + exc.getMessage());
             }
         }
     }
