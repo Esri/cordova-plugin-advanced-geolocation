@@ -56,10 +56,10 @@ public class AdvancedGeolocation extends CordovaPlugin {
     public static final String PROVIDERS_CELL = "cell";
 
     private static final String TAG = "GeolocationPlugin";
-    private static final String SHARED_PREFS_NAME = "LocationSettings";
+    private static final String SHARED_PREFS_KEY = "LocationSettings";
     private static final String SHARED_PREFS_ACTION = "action";
     private static final int MIN_API_LEVEL = 18;
-    private static final int REQUEST_CODE = 1004;
+    private static final int REQUEST_LOCATION_PERMS_CODE = 10;
 
     private static long _minDistance = 0;
     private static long _minTime = 0;
@@ -92,7 +92,8 @@ public class AdvancedGeolocation extends CordovaPlugin {
 
         Log.d(TAG, "Action = " + action);
 
-        setSharedPreferences(action);
+        // Save this action so we can refer to it when the app restarts
+        setSharedPreferences(SHARED_PREFS_KEY, action);
 
         if (args != null) {
             parseArgs(args);
@@ -115,13 +116,14 @@ public class AdvancedGeolocation extends CordovaPlugin {
 //        Log.d(TAG, "MANIFEST: " + preferencesHelper.checkManifest().toString());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            _activity.requestPermissions(perms, REQUEST_CODE_ENABLE_PERMISSION);
+
+            // Reference: Permission Groups https://developer.android.com/guide/topics/security/permissions.html#normal-dangerous
             if(_cordova.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) || _cordova.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)){
                 //TODO
             }
             else {
                 final String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
-                _cordova.requestPermissions(this, REQUEST_CODE, perms);
+                _cordova.requestPermissions(this, REQUEST_LOCATION_PERMS_CODE, perms);
                 return true;
             }
         }
@@ -154,10 +156,19 @@ public class AdvancedGeolocation extends CordovaPlugin {
         }
     }
 
+    /**
+     * Cordova callback when querying for permissions
+     * FYI: you can verify device permissions when in debug mode using:
+     * <code>adb shell pm list permissions -d -g</code>
+     * @param requestCode The request code we assign - it's basically a token
+     * @param permissions The requested permissions - never null
+     * @param grantResults <code>PERMISSION_GRANTED</code> or <code>PERMISSION_DENIED</code> - never null
+     * @throws JSONException
+     */
     public void onRequestPermissionResult(int requestCode, String[] permissions,
                                           int[] grantResults) throws JSONException
     {
-        if(requestCode == REQUEST_CODE){
+        if(requestCode == REQUEST_LOCATION_PERMS_CODE){
             Log.d(TAG,"YES");
         }
     }
@@ -272,7 +283,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
             startLocation();
         }
         else {
-            final SharedPreferences preferences = _cordovaActivity.getSharedPreferences(SHARED_PREFS_NAME,0);
+            final SharedPreferences preferences = _cordovaActivity.getSharedPreferences(SHARED_PREFS_KEY,0);
             final String action = preferences.getString(SHARED_PREFS_ACTION,"");
             if(!action.equals("")){
                 runAction(action);
@@ -390,20 +401,19 @@ public class AdvancedGeolocation extends CordovaPlugin {
     }
 
     private void removeActionPreferences(){
-        _cordovaActivity.getSharedPreferences(SHARED_PREFS_NAME,0).edit().remove(SHARED_PREFS_ACTION).commit();
+        _cordovaActivity.getSharedPreferences(SHARED_PREFS_KEY,0).edit().remove(SHARED_PREFS_ACTION).commit();
     }
 
     /**
-     * Stores the last action specified at runtime, so that it can be retrieved after the app
+     * Stores shared preferences so they can be retrieved after the app
      * is minimized then resumed.
-     * @param action
+     * @param value String
+     * @param key String
      */
-    private void setSharedPreferences(String action){
-        SharedPreferences settings = _cordovaActivity.getSharedPreferences(SHARED_PREFS_NAME, 0);
+    private void setSharedPreferences(String key, String value){
+        SharedPreferences settings = _cordovaActivity.getSharedPreferences(key, 0);
         SharedPreferences.Editor editor = settings.edit();
-
-        // Let's us differentiate between application paused and application start new.
-        editor.putString(SHARED_PREFS_ACTION, action);
+        editor.putString(key, value);
 
         // Use apply() since it runs in the background rather than commit()
         editor.apply();
