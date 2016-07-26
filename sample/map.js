@@ -29,6 +29,7 @@ var app = {
 
             var count = 0;
             var satDiv = document.getElementById("satData");
+            var locationDiv = document.getElementById("locationData");
 
             // Displays GPS-derived locations
             var greenGPSSymbol = new PictureMarkerSymbol({
@@ -97,7 +98,16 @@ var app = {
                     }
                 }
 
-                satData.innerHTML = satellites;
+                satDiv.innerHTML = satellites;
+            }
+
+            function addLocationData(lat, lon, provider){
+                locationDiv.innerHTML =
+                    lat
+                    + ", "
+                    + lon
+                    + ": "
+                    + provider;
             }
 
             // Initialize the geolocation plugin
@@ -122,7 +132,7 @@ var app = {
                             switch(jsonObject.provider){
                                 case "gps":
                                     if(jsonObject.latitude != "0.0"){
-                                        var point = new Point(jsonObject.longitude, jsonObject.latitude);
+                                        var point = new Point(jsonObject.longitude, jsonObject.latitude, "GPS");
                                         map.centerAt(point);
                                         addGraphic( greenGPSSymbol, point);
                                     }
@@ -133,6 +143,7 @@ var app = {
                                         var point = new Point(jsonObject.longitude, jsonObject.latitude);
                                         map.centerAt(point);
                                         addGraphic( blueNetworkSymbol, point);
+                                        addLocationData(jsonObject.longitude, jsonObject.latitude, "NETWORK");
                                     }
                                     break;
 
@@ -144,7 +155,6 @@ var app = {
 
                                 case "cell_info":
                                     console.log("cell_info JSON: " + data);
-                                    satDiv.innerHTML = data;
                                     break;
 
                                 case "cell_location":
@@ -159,6 +169,8 @@ var app = {
                 },
                 function(error){
                     console.log("ERROR! " + JSON.stringify(error));
+                    var e = JSON.parse(error);
+                    console.log("Error: " + e.msg);
                 },
                 /////////////////////////////////////////
                 //
