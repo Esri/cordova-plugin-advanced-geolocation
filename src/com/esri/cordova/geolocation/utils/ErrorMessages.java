@@ -22,11 +22,12 @@ package com.esri.cordova.geolocation.utils;
 public class ErrorMessages {
 
     // Location request errors are 100 series
-    public static final String NETWORK_UNAVAILABLE = "ERROR 101: Network location requested but network is not available";
-    public static final String GPS_UNAVAILABLE = "ERROR 102: GPS location requested but GPS is not available";
-    public static final String CELLDATA_UNAVALABLE = "ERROR 103: Cell data requested but unavailable. Check internet connection";
-    public static final String LOCATIONSERVICES_UNAVAILABLE = "ERROR 104: Neither GPS nor network location is available";
+    public static final String NETWORK_UNAVAILABLE = "{\"err\": \"101\", \"msg\":\"Network location requested but network is not available\"}";
+    public static final String GPS_UNAVAILABLE = "{\"err\": \"102\", \"msg\":\"GPS location requested but GPS is not available\"}";
+    public static final String CELLDATA_UNAVALABLE = "{\"err\": \"103\", \"msg\":\"Cell data requested but unavailable. Check internet connection\"}";
+    public static final String CELLDATA_NOT_ALLOWED = "{\"err\": \"104\", \"msg\":\"Cell Data option is not available on Android API versions < 18\"}";
+    public static final String LOCATION_SERVICES_UNAVAILABLE = "{\"err\": \"105\",\"msg\": \"Neither GPS nor network location is available\"}";
 
     // Configuration errors are 900 series
-    public static final String INCORRECT_CONFIG_ARGS = "ERROR 901: There was a problem with the optional configuration arguments";
+    public static final String INCORRECT_CONFIG_ARGS = "{\"err\": \"901\", \"msg\": \"There was a problem with the optional configuration arguments\"}";
 }
