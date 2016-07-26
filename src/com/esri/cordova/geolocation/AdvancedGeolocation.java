@@ -60,6 +60,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
     private static final String SHARED_PREFS_NAME = "LocationSettings";
     private static final String SHARED_PREFS_ACTION = "action";
     private static final int MIN_API_LEVEL = 18;
+    private static final int REQUEST_CODE = 1004;
 
     private static long _minDistance = 0;
     private static long _minTime = 0;
@@ -101,14 +102,6 @@ public class AdvancedGeolocation extends CordovaPlugin {
         return runAction(action);
     }
 
-    public void onRequestPermissionResult(int requestCode, String[] permissions,
-                                          int[] grantResults) throws JSONException
-    {
-        if(requestCode == 100){
-            Log.d(TAG,"YES");
-        }
-    }
-
     private boolean runAction(final String action){
 
         // NOTE: LocationManager.isProviderEnabled only verifies if the provider is enabled in the Settings menu!
@@ -129,7 +122,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
             }
             else {
                 final String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
-                _cordova.requestPermissions(this, 100, perms);
+                _cordova.requestPermissions(this, REQUEST_CODE, perms);
                 return true;
             }
         }
@@ -157,6 +150,14 @@ public class AdvancedGeolocation extends CordovaPlugin {
             return false;
         }
 
+    }
+
+    public void onRequestPermissionResult(int requestCode, String[] permissions,
+                                          int[] grantResults) throws JSONException
+    {
+        if(requestCode == REQUEST_CODE){
+            Log.d(TAG,"YES");
+        }
     }
 
     private void startLocation(){
