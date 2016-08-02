@@ -30,7 +30,7 @@ public class NetworkUnavailableDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState){
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage("Internet is not available. Check if alternative network is available. Click ok to proceed to Settings.")
+        builder.setMessage("Internet is not available. Check if alternative network is available. Click ok to proceed to Settings then restart app.")
                 .setTitle("Toggle Wireless Settings");
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
