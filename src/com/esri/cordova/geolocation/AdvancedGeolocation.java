@@ -108,11 +108,10 @@ public class AdvancedGeolocation extends CordovaPlugin{
 
     private boolean runAction(final String action){
 
-        _isAppInitialized = true;
-
         if(action.equals("start")){
 //            startLocation();
             validatePermissions();
+            _isAppInitialized = true;
             return true;
         }
         if(action.equals("stop")){
