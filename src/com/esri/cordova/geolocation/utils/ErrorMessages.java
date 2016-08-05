@@ -27,7 +27,8 @@ public class ErrorMessages {
     public static final String CELLDATA_UNAVALABLE = "{\"err\": \"103\", \"msg\":\"Cell data requested but unavailable. Check internet connection\"}";
     public static final String CELLDATA_NOT_ALLOWED = "{\"err\": \"104\", \"msg\":\"Cell Data option is not available on Android API versions < 18\"}";
     public static final String LOCATION_SERVICES_UNAVAILABLE = "{\"err\": \"105\",\"msg\": \"Neither GPS nor network location is available\"}";
-    public static final String LOCATION_SERVICES_DENIED = "{\"err\": \"106\",\"msg\": \"Location services were denied by user with the flag to never ask again.\"}";
+    public static final String LOCATION_SERVICES_DENIED_NOASK = "{\"err\": \"106\",\"msg\": \"Location services were denied by user with the flag to never ask again.\"}";
+    public static final String LOCATION_SERVICES_DENIED = "{\"err\": \"107\",\"msg\": \"Location services were denied by user.\"}";
 
     // Configuration errors are 900 series
     public static final String INCORRECT_CONFIG_ARGS = "{\"err\": \"901\", \"msg\": \"There was a problem with the optional configuration arguments\"}";
