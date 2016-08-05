@@ -21,6 +21,7 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -47,7 +48,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
-public class AdvancedGeolocation extends CordovaPlugin {
+public class AdvancedGeolocation extends CordovaPlugin{
 
     public static final String PROVIDERS_ALL = "all";
     public static final String PROVIDERS_SOME = "some";
@@ -57,6 +58,8 @@ public class AdvancedGeolocation extends CordovaPlugin {
 
     private static final String TAG = "GeolocationPlugin";
     private static final String SHARED_PREFS_KEY = "LocationSettings";
+    private static final String SHARED_PREFS_GEO_DENIED = "denied";
+    private static final String SHARED_PREFS_GEO_GRANTED = "granted";
     private static final String SHARED_PREFS_ACTION = "action";
     private static final int MIN_API_LEVEL = 18;
     private static final int REQUEST_LOCATION_PERMS_CODE = 10;
@@ -70,6 +73,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
     private static boolean _buffer = false;
     private static boolean _isAppInitialized = false;
     private static int _bufferSize = 0;
+    private static boolean _showRationaleFlag = true;
 
     private static GPSController _gpsController = null;
     private static NetworkLocationController _networkLocationController = null;
@@ -106,38 +110,9 @@ public class AdvancedGeolocation extends CordovaPlugin {
 
         _isAppInitialized = true;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-
-            // Reference: Permission Groups https://developer.android.com/guide/topics/security/permissions.html#normal-dangerous
-            // As of July 2016 - ACCESS_WIFI_STATE and ACCESS_NETWORK_STATE are not considered dangerous permissions
-            if(_cordova.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) || _cordova.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)){
-                //TODO
-            }
-            else {
-                final String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
-                _cordova.requestPermissions(this, REQUEST_LOCATION_PERMS_CODE, perms);
-                return true;
-            }
-        }
-        else {
-            final LocationManager locationManager = (LocationManager) _cordovaActivity.getSystemService(Context.LOCATION_SERVICE);
-            final boolean networkLocationEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-            final boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-            final boolean networkEnabled = isInternetConnected(_cordovaActivity.getApplicationContext());
-
-            // If warnings are disabled then skip initializing alert dialog fragments
-            if(!_noWarn && (!networkLocationEnabled || !gpsEnabled || !networkEnabled)){
-                alertDialog(gpsEnabled, networkLocationEnabled, networkEnabled);
-                return true;
-            }
-        }
-
-        return handleStartActions(action);
-    }
-
-    private boolean handleStartActions(final String action){
         if(action.equals("start")){
-            startLocation();
+//            startLocation();
+            validatePermissions();
             return true;
         }
         if(action.equals("stop")){
@@ -157,6 +132,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
      * Cordova callback when querying for permissions
      * FYI: you can verify device permissions when in debug mode using:
      * <code>adb shell pm list permissions -d -g</code>
+     * Reference: http://stackoverflow.com/questions/30719047/android-m-check-runtime-permission-how-to-determine-if-the-user-checked-nev
      * @param requestCode The request code we assign - it's basically a token
      * @param permissions The requested permissions - never null
      * @param grantResults <code>PERMISSION_GRANTED</code> or <code>PERMISSION_DENIED</code> - never null
@@ -165,8 +141,104 @@ public class AdvancedGeolocation extends CordovaPlugin {
     public void onRequestPermissionResult(int requestCode, String[] permissions,
                                           int[] grantResults) throws JSONException
     {
+        // 1st Try - ALLOW or DENY. There is no don't ask again check box.
+        // If ALLOW the proceed and all is good
+        // If DENY then retry with NEVER ASK AGAIN prompt
+        // If ALLOW then proceed and all is good
+        // If DENY again with never ask again checked, then lock down the app and don't ask again
+        // If DENY again without checking never ask again, then recheck on next app launch
+        // have to remember to manually reactivate
+        //
+        // IMPORTANT! When this event completes the onResume event will fire!
+
+        // TEST CASES
+        // Start -> Allow -> minimize -> open app
+        // Start -> Allow -> minimize -> Change perms to deny geo -> open app
+        // Start -> Deny -> Deny -> minimize -> open app
+        // Start -> Deny -> Deny -> minimize -> Change perms to allow geo -> open app
+        // Start -> Deny -> Deny and check no ask -> minimize -> open app
+        // Start -> Deny -> Deny and check no ask -> minimize -> Change perms to allow geo -> open app
+        // Repeat test cases except shut off device geo permissions
+        //
+        // Reference for Permission Denied Workflow: https://material.google.com/patterns/permissions.html#permissions-denied-permissions
+        //
+        // TODO - consider granting JS access system settings
+        // TODO - consider granting JS access app settings
+        // TODO - error messages when permissions not available
+
         if(requestCode == REQUEST_LOCATION_PERMS_CODE){
-            Log.d(TAG,"YES");
+
+            // If permission was granted then go ahead
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
+                Log.d(TAG,"GEO PERMISSIONS GRANTED.");
+                setSharedPreferences(SHARED_PREFS_KEY, SHARED_PREFS_GEO_GRANTED);
+
+            }
+            // If permission was denied then we can't run geolocation - permission DISABLED
+            else{
+                boolean _shouldShowRationale = false;
+
+                // Protected code - only works on Android 23 or greater
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                    _shouldShowRationale = _cordovaActivity.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION);
+                }
+
+                if(_shouldShowRationale && _showRationaleFlag) {
+                    Log.d(TAG, "Show rationale");
+                    _showRationaleFlag = false;
+//                final GPSPermsDeniedDialogFragment gpsPermsDeniedDialogFragment = new GPSPermsDeniedDialogFragment();
+//                gpsPermsDeniedDialogFragment.show(_cordovaActivity.getFragmentManager(), "GPSPermsDeniedAlert");
+                    final String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
+                    _cordova.requestPermissions(this, REQUEST_LOCATION_PERMS_CODE, perms);
+                }
+                else if (_shouldShowRationale && !_showRationaleFlag){
+                    Log.w(TAG, "Rationale already shown, geolocation denied twice");
+                    setSharedPreferences(SHARED_PREFS_KEY, SHARED_PREFS_GEO_DENIED);
+                    sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED);
+                }
+                else if(!_shouldShowRationale) {
+                    Log.w(TAG, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
+                    setSharedPreferences(SHARED_PREFS_KEY, SHARED_PREFS_GEO_DENIED);
+                    sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
+                }
+            }
+        }
+    }
+
+    private void validatePermissions(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+            final SharedPreferences preferencesKey = _cordovaActivity.getSharedPreferences(SHARED_PREFS_KEY,0);
+            final String key = preferencesKey.getString(SHARED_PREFS_KEY,"");
+
+            // Reference: Permission Groups https://developer.android.com/guide/topics/security/permissions.html#normal-dangerous
+            // As of July 2016 - ACCESS_WIFI_STATE and ACCESS_NETWORK_STATE are not considered dangerous permissions
+            if(_cordova.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) || _cordova.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)){
+                setSharedPreferences(SHARED_PREFS_KEY, SHARED_PREFS_GEO_GRANTED);
+                startLocation();
+            }
+            // The user has said to never ask again about activating location services
+            else if(key.equals(SHARED_PREFS_GEO_DENIED)){
+                sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
+            }
+            else {
+                final String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
+                _cordova.requestPermissions(this, REQUEST_LOCATION_PERMS_CODE, perms);
+            }
+        }
+        else {
+            final LocationManager locationManager = (LocationManager) _cordovaActivity.getSystemService(Context.LOCATION_SERVICE);
+            final boolean networkLocationEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+            final boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            final boolean networkEnabled = isInternetConnected(_cordovaActivity.getApplicationContext());
+
+            // If warnings are disabled then skip initializing alert dialog fragments
+            if(!_noWarn && (!networkLocationEnabled || !gpsEnabled || !networkEnabled)){
+                alertDialog(gpsEnabled, networkLocationEnabled, networkEnabled);
+            }
+            else {
+                startLocation();
+            }
         }
     }
 
@@ -274,16 +346,26 @@ public class AdvancedGeolocation extends CordovaPlugin {
      */
     public void onResume(boolean multitasking){
         Log.d(TAG, "onResume");
-        if(_isAppInitialized){
-            startLocation();
-        }
-        else {
-            final SharedPreferences preferences = _cordovaActivity.getSharedPreferences(SHARED_PREFS_KEY,0);
-            final String action = preferences.getString(SHARED_PREFS_KEY,"");
-            if(!action.equals("")){
-                runAction(action);
+
+        final SharedPreferences preferencesKey = _cordovaActivity.getSharedPreferences(SHARED_PREFS_KEY,0);
+        final String key = preferencesKey.getString(SHARED_PREFS_KEY,"");
+
+        if(_cordova.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) || _cordova.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)){
+            if(_isAppInitialized){
+                startLocation();
+            }
+            else {
+                final SharedPreferences preferencesAction = _cordovaActivity.getSharedPreferences(SHARED_PREFS_ACTION,0);
+                final String action = preferencesAction.getString(SHARED_PREFS_ACTION,"");
+                if(!action.equals("")){
+                    runAction(action);
+                }
             }
         }
+        if(key.equals(SHARED_PREFS_GEO_DENIED)){
+            Log.d(TAG,"Unable to resume, app was denied geolocation permissions by user.");
+        }
+
     }
 
     public void onStart(){
@@ -396,7 +478,7 @@ public class AdvancedGeolocation extends CordovaPlugin {
     }
 
     private void removeActionPreferences(){
-        _cordovaActivity.getSharedPreferences(SHARED_PREFS_KEY,0).edit().remove(SHARED_PREFS_ACTION).commit();
+        _cordovaActivity.getSharedPreferences(SHARED_PREFS_ACTION,0).edit().remove(SHARED_PREFS_ACTION).commit();
     }
 
     /**
