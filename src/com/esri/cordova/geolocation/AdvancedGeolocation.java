@@ -45,6 +45,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 
@@ -57,8 +58,9 @@ public class AdvancedGeolocation extends CordovaPlugin{
     public static final String PROVIDERS_CELL = "cell";
 
     private static final String TAG = "GeolocationPlugin";
-    private static final String SHARED_PREFS_KEY = "LocationSettings";
-    private static final String SHARED_PREFS_GEO_DENIED = "denied";
+    private static final String SHARED_PREFS_LOCATION = "LocationSettings";
+    private static final String SHARED_PREFS_GEO_DENIED = "denied";             // basic denied
+    private static final String SHARED_PREFS_GEO_DENIED_NOASK = "deniedNoAsk";  // denied and don't ask again
     private static final String SHARED_PREFS_GEO_GRANTED = "granted";
     private static final String SHARED_PREFS_ACTION = "action";
     private static final int MIN_API_LEVEL = 18;
@@ -170,7 +172,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
             // If permission was granted then go ahead
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
                 Log.d(TAG,"GEO PERMISSIONS GRANTED.");
-                setSharedPreferences(SHARED_PREFS_KEY, SHARED_PREFS_GEO_GRANTED);
+                setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_GRANTED);
 
             }
             // If permission was denied then we can't run geolocation - permission DISABLED
@@ -187,17 +189,16 @@ public class AdvancedGeolocation extends CordovaPlugin{
                     _showRationaleFlag = false;
 //                final GPSPermsDeniedDialogFragment gpsPermsDeniedDialogFragment = new GPSPermsDeniedDialogFragment();
 //                gpsPermsDeniedDialogFragment.show(_cordovaActivity.getFragmentManager(), "GPSPermsDeniedAlert");
-                    final String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
-                    _cordova.requestPermissions(this, REQUEST_LOCATION_PERMS_CODE, perms);
+                    requestPermissions();
                 }
-                else if (_shouldShowRationale && !_showRationaleFlag){
+                if (_shouldShowRationale && !_showRationaleFlag){
                     Log.w(TAG, "Rationale already shown, geolocation denied twice");
-                    setSharedPreferences(SHARED_PREFS_KEY, SHARED_PREFS_GEO_DENIED);
+                    setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_DENIED);
                     sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED);
                 }
-                else if(!_shouldShowRationale) {
+                if(!_shouldShowRationale) {
                     Log.w(TAG, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
-                    setSharedPreferences(SHARED_PREFS_KEY, SHARED_PREFS_GEO_DENIED);
+                    setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_DENIED_NOASK);
                     sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
                 }
             }
@@ -207,22 +208,18 @@ public class AdvancedGeolocation extends CordovaPlugin{
     private void validatePermissions(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
-            final SharedPreferences preferencesKey = _cordovaActivity.getSharedPreferences(SHARED_PREFS_KEY,0);
-            final String key = preferencesKey.getString(SHARED_PREFS_KEY,"");
-
             // Reference: Permission Groups https://developer.android.com/guide/topics/security/permissions.html#normal-dangerous
             // As of July 2016 - ACCESS_WIFI_STATE and ACCESS_NETWORK_STATE are not considered dangerous permissions
-            if(_cordova.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) || _cordova.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)){
-                setSharedPreferences(SHARED_PREFS_KEY, SHARED_PREFS_GEO_GRANTED);
+            if(getAppPermissions()){
+                setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_GRANTED);
                 startLocation();
             }
             // The user has said to never ask again about activating location services
-            else if(key.equals(SHARED_PREFS_GEO_DENIED)){
+            else if(getLocationSettingsSharedPreferences().equals(SHARED_PREFS_GEO_DENIED_NOASK)){
                 sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
             }
             else {
-                final String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
-                _cordova.requestPermissions(this, REQUEST_LOCATION_PERMS_CODE, perms);
+                requestPermissions();
             }
         }
         else {
@@ -247,57 +244,57 @@ public class AdvancedGeolocation extends CordovaPlugin{
         // to make sure to set pluginResult.setKeepCallback(true);
 
         final boolean networkEnabled = isInternetConnected(_cordovaActivity.getApplicationContext());
+        ExecutorService threadPool = cordova.getThreadPool();
 
         if(_providers.equalsIgnoreCase(PROVIDERS_ALL)){
             _gpsController = new GPSController(
                     _cordova, _callbackContext, _minDistance, _minTime, _useCache, _returnSatelliteData, _buffer, _bufferSize);
-            cordova.getThreadPool().execute(_gpsController);
+            threadPool.execute(_gpsController);
 
             _networkLocationController = new NetworkLocationController(
                     _cordova, _callbackContext, _minDistance, _minTime, _useCache, _buffer, _bufferSize);
-            cordova.getThreadPool().execute(_networkLocationController);
+            threadPool.execute(_networkLocationController);
 
             // Reference: https://developer.android.com/reference/android/telephony/TelephonyManager.html#getAllCellInfo()
             // Reference: https://developer.android.com/reference/android/telephony/CellIdentityWcdma.html (added at API 18)
             if (Build.VERSION.SDK_INT < MIN_API_LEVEL){
-                Log.w(TAG, ErrorMessages.CELLDATA_NOT_ALLOWED);
+                cellDataNotAllowed();
             }
             else {
                 _cellLocationController = new CellLocationController(networkEnabled,_cordova,_callbackContext);
-                cordova.getThreadPool().execute(_cellLocationController);
+                threadPool.execute(_cellLocationController);
             }
         }
         if(_providers.equalsIgnoreCase(PROVIDERS_SOME)){
             _gpsController = new GPSController(
                     _cordova, _callbackContext, _minDistance, _minTime, _useCache, _returnSatelliteData, _buffer, _bufferSize);
-            cordova.getThreadPool().execute(_gpsController);
+            threadPool.execute(_gpsController);
 
             _networkLocationController = new NetworkLocationController(
                     _cordova, _callbackContext, _minDistance, _minTime, _useCache, _buffer, _bufferSize);
-            cordova.getThreadPool().execute(_networkLocationController);
+            threadPool.execute(_networkLocationController);
 
         }
         if(_providers.equalsIgnoreCase(PROVIDERS_GPS)){
             _gpsController = new GPSController(
                     _cordova, _callbackContext, _minDistance, _minTime, _useCache, _returnSatelliteData, _buffer, _bufferSize);
-            cordova.getThreadPool().execute(_gpsController);
+            threadPool.execute(_gpsController);
         }
         if(_providers.equalsIgnoreCase(PROVIDERS_NETWORK)){
             _networkLocationController = new NetworkLocationController(
                     _cordova, _callbackContext, _minDistance, _minTime, _useCache, _buffer, _bufferSize);
-            cordova.getThreadPool().execute(_networkLocationController);
+            threadPool.execute(_networkLocationController);
         }
         if(_providers.equalsIgnoreCase(PROVIDERS_CELL)){
 
             // Reference: https://developer.android.com/reference/android/telephony/TelephonyManager.html#getAllCellInfo()
             // Reference: https://developer.android.com/reference/android/telephony/CellIdentityWcdma.html
             if (Build.VERSION.SDK_INT < MIN_API_LEVEL){
-                Log.w(TAG, ErrorMessages.CELLDATA_NOT_ALLOWED);
-                sendCallback(PluginResult.Status.ERROR, ErrorMessages.CELLDATA_NOT_ALLOWED);
+                cellDataNotAllowed();
             }
             else {
                 _cellLocationController = new CellLocationController(networkEnabled,_cordova,_callbackContext);
-                cordova.getThreadPool().execute(_cellLocationController);
+                threadPool.execute(_cellLocationController);
             }
         }
     }
@@ -337,6 +334,59 @@ public class AdvancedGeolocation extends CordovaPlugin{
         Log.d(TAG, "Stopping geolocation");
     }
 
+    //
+    //
+    // PREFERENCES
+    //
+    //
+
+    /**
+     * We only have a finite number of permissions for this plugin.
+     * @return boolean
+     */
+    private boolean getAppPermissions(){
+        return _cordova.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) ||
+                _cordova.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
+    }
+
+    private String getLocationSettingsSharedPreferences(){
+        return _cordovaActivity.getSharedPreferences(SHARED_PREFS_LOCATION,0).getString(SHARED_PREFS_LOCATION,"");
+    }
+
+    private String getActionSharedPreferences(){
+        return _cordovaActivity.getSharedPreferences(SHARED_PREFS_ACTION,0).getString(SHARED_PREFS_ACTION,"");
+    }
+
+    /**
+     * Stores shared preferences so they can be retrieved after the app
+     * is minimized then resumed.
+     * @param value String
+     * @param key String
+     */
+    private void setSharedPreferences(String key, String value){
+        _cordovaActivity.getSharedPreferences(key, 0).edit().putString(key, value).apply();
+    }
+
+    private void removeActionPreferences(){
+        _cordovaActivity.getSharedPreferences(SHARED_PREFS_ACTION,0).edit().remove(SHARED_PREFS_ACTION).commit();
+    }
+
+    private void requestPermissions(){
+        final String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
+        _cordova.requestPermissions(this, REQUEST_LOCATION_PERMS_CODE, perms);
+    }
+
+    private void cellDataNotAllowed(){
+        Log.w(TAG, ErrorMessages.CELLDATA_NOT_ALLOWED);
+        sendCallback(PluginResult.Status.ERROR, ErrorMessages.CELLDATA_NOT_ALLOWED);
+    }
+
+    //
+    //
+    // EVENTS
+    //
+    //
+
     /**
      * Retrieves shared preferences to find out what action was requested when the app
      * originally launched. Resumes based on that last action.
@@ -346,22 +396,18 @@ public class AdvancedGeolocation extends CordovaPlugin{
     public void onResume(boolean multitasking){
         Log.d(TAG, "onResume");
 
-        final SharedPreferences preferencesKey = _cordovaActivity.getSharedPreferences(SHARED_PREFS_KEY,0);
-        final String key = preferencesKey.getString(SHARED_PREFS_KEY,"");
-
-        if(_cordova.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) || _cordova.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)){
+        if(getAppPermissions()){
             if(_isAppInitialized){
                 startLocation();
             }
             else {
-                final SharedPreferences preferencesAction = _cordovaActivity.getSharedPreferences(SHARED_PREFS_ACTION,0);
-                final String action = preferencesAction.getString(SHARED_PREFS_ACTION,"");
+                final String action = getActionSharedPreferences();
                 if(!action.equals("")){
                     runAction(action);
                 }
             }
         }
-        if(key.equals(SHARED_PREFS_GEO_DENIED)){
+        if(getLocationSettingsSharedPreferences().equals(SHARED_PREFS_GEO_DENIED)){
             Log.d(TAG,"Unable to resume, app was denied geolocation permissions by user.");
         }
 
@@ -474,25 +520,6 @@ public class AdvancedGeolocation extends CordovaPlugin{
         }
 
         return connected;
-    }
-
-    private void removeActionPreferences(){
-        _cordovaActivity.getSharedPreferences(SHARED_PREFS_ACTION,0).edit().remove(SHARED_PREFS_ACTION).commit();
-    }
-
-    /**
-     * Stores shared preferences so they can be retrieved after the app
-     * is minimized then resumed.
-     * @param value String
-     * @param key String
-     */
-    private void setSharedPreferences(String key, String value){
-        SharedPreferences settings = _cordovaActivity.getSharedPreferences(key, 0);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putString(key, value);
-
-        // Use apply() since it runs in the background rather than commit()
-        editor.apply();
     }
 
     private void parseArgs(JSONArray args){
