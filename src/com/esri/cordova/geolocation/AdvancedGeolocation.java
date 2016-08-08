@@ -59,6 +59,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
 
     private static final String TAG = "GeolocationPlugin";
     private static final String SHARED_PREFS_LOCATION = "LocationSettings";
+    private static final String SHARED_PREFS_FIRST_RUN = "firstRun";
     private static final String SHARED_PREFS_GEO_DENIED = "denied";             // basic denied
     private static final String SHARED_PREFS_GEO_DENIED_NOASK = "deniedNoAsk";  // denied and don't ask again
     private static final String SHARED_PREFS_GEO_GRANTED = "granted";
@@ -381,6 +382,16 @@ public class AdvancedGeolocation extends CordovaPlugin{
         sendCallback(PluginResult.Status.ERROR, ErrorMessages.CELLDATA_NOT_ALLOWED);
     }
 
+    private boolean isFirstRun(){
+        boolean firstRun = _cordovaActivity.getSharedPreferences(SHARED_PREFS_FIRST_RUN,0).getBoolean(SHARED_PREFS_FIRST_RUN,true);
+
+        if (firstRun) {
+            _cordovaActivity.getSharedPreferences(SHARED_PREFS_FIRST_RUN, 0).edit().putBoolean(SHARED_PREFS_FIRST_RUN, false).apply();
+        }
+
+        return firstRun;
+    }
+
     //
     //
     // EVENTS
@@ -439,6 +450,13 @@ public class AdvancedGeolocation extends CordovaPlugin{
             _cordovaActivity.finish();
         }
     }
+
+
+    //
+    //
+    // UTILITY METHODS
+    //
+    //
 
     /**
      * Shutdown cordova thread pool. This assumes we are in control of all tasks running
