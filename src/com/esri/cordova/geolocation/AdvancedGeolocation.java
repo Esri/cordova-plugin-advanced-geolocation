@@ -26,6 +26,7 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.esri.cordova.geolocation.controllers.CellLocationController;
@@ -45,7 +46,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 
@@ -84,12 +84,14 @@ public class AdvancedGeolocation extends CordovaPlugin{
     private static CordovaInterface _cordova;
     private static Activity _cordovaActivity;
     private static CallbackContext _callbackContext;
+    private static SharedPreferences _sharedPreferences;
 
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
         _cordova = cordova;
         _cordovaActivity = cordova.getActivity();
+        _sharedPreferences = PreferenceManager.getDefaultSharedPreferences(_cordovaActivity);
         removeActionPreferences();
         Log.d(TAG, "Initialized");
     }
@@ -179,24 +181,30 @@ public class AdvancedGeolocation extends CordovaPlugin{
             // If permission was denied then we can't run geolocation - permission DISABLED
             else{
                 boolean _shouldShowRationale = false;
+                final boolean _isFirstRun = isFirstRun();
 
                 // Protected code - only works on Android 23 or greater
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
                     _shouldShowRationale = _cordovaActivity.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION);
                 }
 
-                if(_shouldShowRationale && _showRationaleFlag) {
+                // Show the rationale dialog
+                if(_shouldShowRationale && _isFirstRun) {
                     Log.d(TAG, "Show rationale");
                     _showRationaleFlag = false;
 //                final GPSPermsDeniedDialogFragment gpsPermsDeniedDialogFragment = new GPSPermsDeniedDialogFragment();
 //                gpsPermsDeniedDialogFragment.show(_cordovaActivity.getFragmentManager(), "GPSPermsDeniedAlert");
                     requestPermissions();
                 }
-                if (_shouldShowRationale && !_showRationaleFlag){
+
+                // We've already shown the rationale dialog
+                if (_shouldShowRationale && !_isFirstRun){
                     Log.w(TAG, "Rationale already shown, geolocation denied twice");
                     setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_DENIED);
                     sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED);
                 }
+
+                // User doesn't want to see any more preference-related dialog boxes
                 if(!_shouldShowRationale) {
                     Log.w(TAG, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
                     setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_DENIED_NOASK);
@@ -216,7 +224,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
                 startLocation();
             }
             // The user has said to never ask again about activating location services
-            else if(getLocationSettingsSharedPreferences().equals(SHARED_PREFS_GEO_DENIED_NOASK)){
+            else if(getSharedPreferences(SHARED_PREFS_LOCATION).equals(SHARED_PREFS_GEO_DENIED_NOASK)){
                 sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
             }
             else {
@@ -350,12 +358,8 @@ public class AdvancedGeolocation extends CordovaPlugin{
                 _cordova.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
     }
 
-    private String getLocationSettingsSharedPreferences(){
-        return _cordovaActivity.getSharedPreferences(SHARED_PREFS_LOCATION,0).getString(SHARED_PREFS_LOCATION,"");
-    }
-
-    private String getActionSharedPreferences(){
-        return _cordovaActivity.getSharedPreferences(SHARED_PREFS_ACTION,0).getString(SHARED_PREFS_ACTION,"");
+    private String getSharedPreferences(String key){
+        return _sharedPreferences.getString(key,"");
     }
 
     /**
@@ -365,11 +369,12 @@ public class AdvancedGeolocation extends CordovaPlugin{
      * @param key String
      */
     private void setSharedPreferences(String key, String value){
-        _cordovaActivity.getSharedPreferences(key, 0).edit().putString(key, value).apply();
+        _sharedPreferences.edit().putString(key, value).apply();
+        Log.d(TAG, "prefs: " + key + ", " + _sharedPreferences.getString(key,""));
     }
 
     private void removeActionPreferences(){
-        _cordovaActivity.getSharedPreferences(SHARED_PREFS_ACTION,0).edit().remove(SHARED_PREFS_ACTION).commit();
+        _sharedPreferences.edit().remove(SHARED_PREFS_ACTION).apply();
     }
 
     private void requestPermissions(){
@@ -383,10 +388,10 @@ public class AdvancedGeolocation extends CordovaPlugin{
     }
 
     private boolean isFirstRun(){
-        boolean firstRun = _cordovaActivity.getSharedPreferences(SHARED_PREFS_FIRST_RUN,0).getBoolean(SHARED_PREFS_FIRST_RUN,true);
+        boolean firstRun = _sharedPreferences.getBoolean(SHARED_PREFS_FIRST_RUN, true);
 
         if (firstRun) {
-            _cordovaActivity.getSharedPreferences(SHARED_PREFS_FIRST_RUN, 0).edit().putBoolean(SHARED_PREFS_FIRST_RUN, false).apply();
+            _sharedPreferences.edit().putBoolean(SHARED_PREFS_FIRST_RUN, false).apply();
         }
 
         return firstRun;
@@ -412,13 +417,13 @@ public class AdvancedGeolocation extends CordovaPlugin{
                 startLocation();
             }
             else {
-                final String action = getActionSharedPreferences();
+                final String action = getSharedPreferences(SHARED_PREFS_ACTION);
                 if(!action.equals("")){
                     runAction(action);
                 }
             }
         }
-        if(getLocationSettingsSharedPreferences().equals(SHARED_PREFS_GEO_DENIED)){
+        if(getSharedPreferences(SHARED_PREFS_LOCATION).equals(SHARED_PREFS_GEO_DENIED)){
             Log.d(TAG,"Unable to resume, app was denied geolocation permissions by user.");
         }
 
