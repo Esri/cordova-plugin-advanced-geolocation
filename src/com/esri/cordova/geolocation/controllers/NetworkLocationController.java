@@ -90,7 +90,8 @@ public final class NetworkLocationController implements Runnable {
             Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
                 public void uncaughtException(Thread thread, Throwable throwable) {
-                    Log.d(TAG, "Failing gracefully after detecting an uncaught exception on NetworkLocationController thread.");
+                    Log.d(TAG, "Failing gracefully after detecting an uncaught exception on NetworkLocationController thread."
+                            + throwable.getMessage());
                 }
             });
 
@@ -108,7 +109,16 @@ public final class NetworkLocationController implements Runnable {
 
                 // Return cache immediate if requested, otherwise wait for a location provider
                 if(_returnCache){
-                    final Location location = _locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+                    Location location = null;
+
+                    try {
+                        location = _locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                    }
+                    catch(SecurityException exc){
+                        Log.e(TAG, exc.getMessage());
+                    }
+
                     final String parsedLocation;
 
                     // If the provider is disabled or currently unavailable then null may be returned on some devices
@@ -128,7 +138,15 @@ public final class NetworkLocationController implements Runnable {
 
         if(_locationManager != null){
             if(_locationListenerNetworkProvider != null){
-                _locationManager.removeUpdates(_locationListenerNetworkProvider);
+
+                try {
+                    _locationManager.removeUpdates(_locationListenerNetworkProvider);
+                }
+
+                catch(SecurityException exc){
+                    Log.e(TAG, exc.getMessage());
+                }
+
                 _locationListenerNetworkProvider = null;
             }
 
@@ -225,7 +243,7 @@ public final class NetworkLocationController implements Runnable {
                 _locationManager.requestLocationUpdates(
                         LocationManager.NETWORK_PROVIDER, _minTime, _minDistance, _locationListenerNetworkProvider);
 
-            } catch (Exception exc) {
+            } catch (SecurityException exc) {
                 Log.d(TAG, "Unable to start network provider. " + exc.getMessage());
                 status.success = false;
                 status.exception = exc.getMessage();

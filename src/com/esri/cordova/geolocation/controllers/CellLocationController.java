@@ -89,7 +89,8 @@ public final class CellLocationController implements Runnable{
             Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
                 public void uncaughtException(Thread thread, Throwable throwable) {
-                    Log.d(TAG, "Failing gracefully after detecting an uncaught exception on CellLocationController thread. " + throwable.getMessage());
+                    Log.d(TAG, "Failing gracefully after detecting an uncaught exception on CellLocationController thread. "
+                            + throwable.getMessage());
                 }
             });
 
@@ -128,9 +129,12 @@ public final class CellLocationController implements Runnable{
      * the rate at which onCellInfoChanged() is called.
      */
     private void getAllCellInfos(){
-        if(_telephonyManager != null) {
+        if(_telephonyManager != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             final List<CellInfo> cellInfos = _telephonyManager.getAllCellInfo();
             processCellInfos(cellInfos);
+        }
+        else {
+            Log.w(TAG, "Unable to provide cell info due to version restriction");
         }
     }
 
@@ -155,7 +159,7 @@ public final class CellLocationController implements Runnable{
     }
 
     private static void processCellInfos(List<CellInfo> cellInfos){
-        if(cellInfos != null){
+        if(cellInfos != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
 
             for(CellInfo cellInfo : cellInfos){
 
