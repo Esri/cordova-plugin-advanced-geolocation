@@ -32,6 +32,7 @@ import android.util.Log;
 import com.esri.cordova.geolocation.controllers.CellLocationController;
 import com.esri.cordova.geolocation.controllers.GPSController;
 import com.esri.cordova.geolocation.controllers.NetworkLocationController;
+import com.esri.cordova.geolocation.controllers.PermissionsController;
 import com.esri.cordova.geolocation.fragments.GPSAlertDialogFragment;
 import com.esri.cordova.geolocation.fragments.NetworkUnavailableDialogFragment;
 import com.esri.cordova.geolocation.utils.ErrorMessages;
@@ -85,6 +86,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
     private static Activity _cordovaActivity;
     private static CallbackContext _callbackContext;
     private static SharedPreferences _sharedPreferences;
+    private static PermissionsController _permissionsController;
 
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
@@ -92,6 +94,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
         _cordova = cordova;
         _cordovaActivity = cordova.getActivity();
         _sharedPreferences = PreferenceManager.getDefaultSharedPreferences(_cordovaActivity);
+        _permissionsController = new PermissionsController(_cordovaActivity,this, _cordova);
         removeActionPreferences();
         Log.d(TAG, "Initialized");
     }
@@ -134,7 +137,8 @@ public class AdvancedGeolocation extends CordovaPlugin{
 
     /**
      * Cordova callback when querying for permissions
-     * FYI: you can verify device permissions when in debug mode using:
+     * Overrides in CordovaPlugin
+     * FYI: you can verify device permissions using:
      * <code>adb shell pm list permissions -d -g</code>
      * Reference: http://stackoverflow.com/questions/30719047/android-m-check-runtime-permission-how-to-determine-if-the-user-checked-nev
      * @param requestCode The request code we assign - it's basically a token
@@ -219,8 +223,8 @@ public class AdvancedGeolocation extends CordovaPlugin{
 
             // Reference: Permission Groups https://developer.android.com/guide/topics/security/permissions.html#normal-dangerous
             // As of July 2016 - ACCESS_WIFI_STATE and ACCESS_NETWORK_STATE are not considered dangerous permissions
-            if(getAppPermissions()){
-                setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_GRANTED);
+            if(_permissionsController.getAppPermissions()){
+//                setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_GRANTED);
                 startLocation();
             }
             // The user has said to never ask again about activating location services
@@ -349,15 +353,6 @@ public class AdvancedGeolocation extends CordovaPlugin{
     //
     //
 
-    /**
-     * We only have a finite number of permissions for this plugin.
-     * @return boolean
-     */
-    private boolean getAppPermissions(){
-        return _cordova.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) ||
-                _cordova.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
-    }
-
     private String getSharedPreferences(String key){
         return _sharedPreferences.getString(key,"");
     }
@@ -412,7 +407,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
     public void onResume(boolean multitasking){
         Log.d(TAG, "onResume");
 
-        if(getAppPermissions()){
+        if(_permissionsController.getAppPermissions()){
             if(_isAppInitialized){
                 startLocation();
             }
@@ -423,8 +418,11 @@ public class AdvancedGeolocation extends CordovaPlugin{
                 }
             }
         }
-        if(getSharedPreferences(SHARED_PREFS_LOCATION).equals(SHARED_PREFS_GEO_DENIED)){
+        if(getSharedPreferences(SHARED_PREFS_LOCATION).equals(SHARED_PREFS_GEO_DENIED_NOASK)){
             Log.d(TAG,"Unable to resume, app was denied geolocation permissions by user.");
+        }
+        if(_showRationaleFlag){
+           validatePermissions();
         }
 
     }
