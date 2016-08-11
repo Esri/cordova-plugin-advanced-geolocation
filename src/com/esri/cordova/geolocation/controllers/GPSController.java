@@ -93,12 +93,14 @@ public final class GPSController implements Runnable {
     public void startLocation(){
 
         if(!Thread.currentThread().isInterrupted()){
+            Log.d(TAG,"AVAILABLE PROVIDERS == " + _locationManager.getAllProviders().toString());
 
             Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
                 public void uncaughtException(Thread thread, Throwable throwable) {
                 Log.d(TAG, "Failing gracefully after detecting an uncaught exception on GPSController thread. "
                         + throwable.getMessage());
+                stopLocation();
                 }
             });
 
@@ -153,6 +155,13 @@ public final class GPSController implements Runnable {
     public void stopLocation(){
 
         if(_locationManager != null){
+            Log.d(TAG, "Attempting to stop gps geolocation");
+
+            if(_gpsStatusListener != null){
+                _locationManager.removeGpsStatusListener(_gpsStatusListener);
+                _gpsStatusListener = null;
+            }
+
             if(_locationListenerGPSProvider != null){
 
                 try {
@@ -165,11 +174,6 @@ public final class GPSController implements Runnable {
                 _locationListenerGPSProvider = null;
             }
 
-            if(_gpsStatusListener != null){
-                _locationManager.removeGpsStatusListener(_gpsStatusListener);
-                _gpsStatusListener = null;
-            }
-
             _locationManager = null;
 
             // Clear all elements from the buffer
@@ -179,8 +183,9 @@ public final class GPSController implements Runnable {
 
             Thread.currentThread().interrupt();
         }
-
-        Log.d(TAG, "Stopping gps geolocation");
+        else{
+            Log.d(TAG, "GPS location already stopped");
+        }
     }
 
     /**
@@ -211,8 +216,8 @@ public final class GPSController implements Runnable {
         };
 
         final InitStatus status = new InitStatus();
-
-        _locationManager = (LocationManager) _cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);
+        Log.d(TAG,"AVAILABLE PROVIDERS 2 == " + _locationManager.getAllProviders().toString());
+//        _locationManager = (LocationManager) _cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);
         final Boolean gpsProviderEnabled = _locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
         if(gpsProviderEnabled){
@@ -295,7 +300,7 @@ public final class GPSController implements Runnable {
                 stopLocation();
             }
         };
-
+        Log.d(TAG,"AVAILABLE PROVIDERS 3 == " + _locationManager.getAllProviders().toString());
         final InitStatus status = new InitStatus();
         final Boolean gpsProviderEnabled = _locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 

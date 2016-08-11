@@ -75,10 +75,9 @@ public class AdvancedGeolocation extends CordovaPlugin{
     private static boolean _useCache;
     private static boolean _returnSatelliteData = false;
     private static boolean _buffer = false;
-    private static boolean _isAppInitialized = false;
     private static int _bufferSize = 0;
-    private static boolean _showRationaleFlag = true;
 
+    private static LocationManager _locationManager = null;
     private static GPSController _gpsController = null;
     private static NetworkLocationController _networkLocationController = null;
     private static CellLocationController _cellLocationController = null;
@@ -119,7 +118,6 @@ public class AdvancedGeolocation extends CordovaPlugin{
         if(action.equals("start")){
 //            startLocation();
             validatePermissions();
-            _isAppInitialized = true;
             return true;
         }
         if(action.equals("stop")){
@@ -179,37 +177,30 @@ public class AdvancedGeolocation extends CordovaPlugin{
             // If permission was granted then go ahead
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
                 Log.d(TAG,"GEO PERMISSIONS GRANTED.");
-                setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_GRANTED);
-
+                _permissionsController.handleOnRequestAllowed();
             }
             // If permission was denied then we can't run geolocation - permission DISABLED
             else{
-                boolean _shouldShowRationale = false;
-                final boolean _isFirstRun = isFirstRun();
 
-                // Protected code - only works on Android 23 or greater
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-                    _shouldShowRationale = _cordovaActivity.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION);
-                }
+                _permissionsController.handleOnRequestDenied();
+                final int showRationale = _permissionsController.getShowRationale();
 
                 // Show the rationale dialog
-                if(_shouldShowRationale && _isFirstRun) {
-                    Log.d(TAG, "Show rationale");
-                    _showRationaleFlag = false;
+                if(showRationale == _permissionsController.ALLOW){
 //                final GPSPermsDeniedDialogFragment gpsPermsDeniedDialogFragment = new GPSPermsDeniedDialogFragment();
 //                gpsPermsDeniedDialogFragment.show(_cordovaActivity.getFragmentManager(), "GPSPermsDeniedAlert");
                     requestPermissions();
                 }
 
                 // We've already shown the rationale dialog
-                if (_shouldShowRationale && !_isFirstRun){
+                if(showRationale == _permissionsController.DENIED){
                     Log.w(TAG, "Rationale already shown, geolocation denied twice");
                     setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_DENIED);
                     sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED);
                 }
 
                 // User doesn't want to see any more preference-related dialog boxes
-                if(!_shouldShowRationale) {
+                if(showRationale == _permissionsController.DENIED_NOASK){
                     Log.w(TAG, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
                     setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_DENIED_NOASK);
                     sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
@@ -228,17 +219,17 @@ public class AdvancedGeolocation extends CordovaPlugin{
                 startLocation();
             }
             // The user has said to never ask again about activating location services
-            else if(getSharedPreferences(SHARED_PREFS_LOCATION).equals(SHARED_PREFS_GEO_DENIED_NOASK)){
+            else if(_permissionsController.getNoAsk()){
                 sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
             }
-            else {
+            else if(_permissionsController.getAllowRequestPermissions()) {
                 requestPermissions();
             }
         }
         else {
-            final LocationManager locationManager = (LocationManager) _cordovaActivity.getSystemService(Context.LOCATION_SERVICE);
-            final boolean networkLocationEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-            final boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            _locationManager = (LocationManager) _cordovaActivity.getSystemService(Context.LOCATION_SERVICE);
+            final boolean networkLocationEnabled = _locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+            final boolean gpsEnabled = _locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
             final boolean networkEnabled = isInternetConnected(_cordovaActivity.getApplicationContext());
 
             // If warnings are disabled then skip initializing alert dialog fragments
@@ -317,22 +308,19 @@ public class AdvancedGeolocation extends CordovaPlugin{
      */
     private void stopLocation(){
 
-        if(_isAppInitialized){
-            if(_gpsController != null){
-                // Gracefully attempt to stop location
-                _gpsController.stopLocation();
+        if(_gpsController != null){
+            // Gracefully attempt to stop location
+            _gpsController.stopLocation();
 
-                // make sure there are no references
-                _gpsController = null;
-            }
-            if(_networkLocationController != null){
-                // Gracefully attempt to stop location
-                _networkLocationController.stopLocation();
+            // make sure there are no references
+            _gpsController = null;
+        }
+        if(_networkLocationController != null){
+            // Gracefully attempt to stop location
+            _networkLocationController.stopLocation();
 
-                // make sure there are no references
-                _networkLocationController = null;
-            }
-            _isAppInitialized = false;
+            // make sure there are no references
+            _networkLocationController = null;
         }
 
         // CellLocationController does not require LocationManager
@@ -382,16 +370,6 @@ public class AdvancedGeolocation extends CordovaPlugin{
         sendCallback(PluginResult.Status.ERROR, ErrorMessages.CELLDATA_NOT_ALLOWED);
     }
 
-    private boolean isFirstRun(){
-        boolean firstRun = _sharedPreferences.getBoolean(SHARED_PREFS_FIRST_RUN, true);
-
-        if (firstRun) {
-            _sharedPreferences.edit().putBoolean(SHARED_PREFS_FIRST_RUN, false).apply();
-        }
-
-        return firstRun;
-    }
-
     //
     //
     // EVENTS
@@ -407,8 +385,8 @@ public class AdvancedGeolocation extends CordovaPlugin{
     public void onResume(boolean multitasking){
         Log.d(TAG, "onResume");
 
-        if(_permissionsController.getAppPermissions()){
-            if(_isAppInitialized){
+        if(_permissionsController.getAppPermissions() || _permissionsController.getShowRationale() == _permissionsController.ALLOW){
+            if(_locationManager != null){
                 startLocation();
             }
             else {
@@ -418,30 +396,24 @@ public class AdvancedGeolocation extends CordovaPlugin{
                 }
             }
         }
-        if(getSharedPreferences(SHARED_PREFS_LOCATION).equals(SHARED_PREFS_GEO_DENIED_NOASK)){
-            Log.d(TAG,"Unable to resume, app was denied geolocation permissions by user.");
-        }
-        if(_showRationaleFlag){
-           validatePermissions();
-        }
-
     }
 
-    public void onStart(){
-        Log.d(TAG, "onStart");
-        if(_isAppInitialized){
-            startLocation();
-        }
-    }
+//    public void onStart(){
+//        Log.d(TAG, "onStart");
+//        if(_locationManager != null){
+//            startLocation();
+//        }
+//    }
 
     public void onPause(boolean multitasking){
-        stopLocation();
         Log.d(TAG, "onPause");
+        stopLocation();
+        _permissionsController.handleOnPause();
     }
 
     public void onStop(){
-        stopLocation();
         Log.d(TAG, "onStop");
+        stopLocation();
     }
 
     public void onDestroy(){
