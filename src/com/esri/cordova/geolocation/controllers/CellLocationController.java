@@ -89,8 +89,9 @@ public final class CellLocationController implements Runnable{
             Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
                 public void uncaughtException(Thread thread, Throwable throwable) {
-                    Log.d(TAG, "Failing gracefully after detecting an uncaught exception on CellLocationController thread. "
-                            + throwable.getMessage());
+                Log.d(TAG, "Failing gracefully after detecting an uncaught exception on CellLocationController thread. "
+                        + throwable.getMessage());
+                stopLocation();
                 }
             });
 
