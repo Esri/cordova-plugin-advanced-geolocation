@@ -65,6 +65,8 @@ public class AdvancedGeolocation extends CordovaPlugin{
     private static final String SHARED_PREFS_GEO_DENIED_NOASK = "deniedNoAsk";  // denied and don't ask again
     private static final String SHARED_PREFS_GEO_GRANTED = "granted";
     private static final String SHARED_PREFS_ACTION = "action";
+    private static final String SHARED_PREFS_ONSTOP_KEY = "onstop";
+    private static final boolean SHARED_PREFS_ONSTOP_VALUE = true;
     private static final int MIN_API_LEVEL = 18;
     private static final int REQUEST_LOCATION_PERMS_CODE = 10;
 
@@ -76,7 +78,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
     private static boolean _returnSatelliteData = false;
     private static boolean _buffer = false;
     private static int _bufferSize = 0;
-
+//TODO Remove _locationManager as a global
     private static LocationManager _locationManager = null;
     private static GPSController _gpsController = null;
     private static NetworkLocationController _networkLocationController = null;
@@ -94,6 +96,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
         _cordovaActivity = cordova.getActivity();
         _sharedPreferences = PreferenceManager.getDefaultSharedPreferences(_cordovaActivity);
         _permissionsController = new PermissionsController(_cordovaActivity,this, _cordova);
+        _permissionsController.handleOnInitialize();
         removeActionPreferences();
         Log.d(TAG, "Initialized");
     }
@@ -181,7 +184,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
             }
             // If permission was denied then we can't run geolocation - permission DISABLED
             else{
-
+                Log.w(TAG,"GEO PERMISSIONS DENIED.");
                 _permissionsController.handleOnRequestDenied();
                 final int showRationale = _permissionsController.getShowRationale();
 
@@ -211,19 +214,27 @@ public class AdvancedGeolocation extends CordovaPlugin{
 
     private void validatePermissions(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-
             // Reference: Permission Groups https://developer.android.com/guide/topics/security/permissions.html#normal-dangerous
             // As of July 2016 - ACCESS_WIFI_STATE and ACCESS_NETWORK_STATE are not considered dangerous permissions
-            if(_permissionsController.getAppPermissions()){
+Log.d(TAG, "validatePermissions()");
+            final boolean permissionGranted = _permissionsController.getAppPermissions();
+            final int whatPermission = _permissionsController.getShowRationale();
+
+            if(permissionGranted){
 //                setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_GRANTED);
                 startLocation();
             }
             // The user has said to never ask again about activating location services
-            else if(_permissionsController.getNoAsk()){
+            else if(whatPermission == _permissionsController.DENIED_NOASK){
+                Log.d(TAG, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
                 sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
             }
-            else if(_permissionsController.getAllowRequestPermissions()) {
+            else if(whatPermission == _permissionsController.ALLOW) {
                 requestPermissions();
+            }
+            else if(whatPermission == _permissionsController.DENIED) {
+                Log.w(TAG, "Rationale already shown, geolocation denied twice");
+                sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED);
             }
         }
         else {
@@ -385,34 +396,29 @@ public class AdvancedGeolocation extends CordovaPlugin{
     public void onResume(boolean multitasking){
         Log.d(TAG, "onResume");
 
-        if(_permissionsController.getAppPermissions() || _permissionsController.getShowRationale() == _permissionsController.ALLOW){
-            if(_locationManager != null){
-                startLocation();
-            }
-            else {
-                final String action = getSharedPreferences(SHARED_PREFS_ACTION);
-                if(!action.equals("")){
-                    runAction(action);
-                }
-            }
+        final String action = getSharedPreferences(SHARED_PREFS_ACTION);
+        if(!action.equals("")) {
+            runAction(action);
         }
     }
 
-//    public void onStart(){
-//        Log.d(TAG, "onStart");
-//        if(_locationManager != null){
-//            startLocation();
-//        }
-//    }
+    public void onStart(){
+        Log.d(TAG, "onStart");
+    }
 
     public void onPause(boolean multitasking){
         Log.d(TAG, "onPause");
         stopLocation();
-        _permissionsController.handleOnPause();
     }
 
     public void onStop(){
         Log.d(TAG, "onStop");
+
+        // Track when the application is minimized. This way we can differentiate between
+        // when requestPermissions() forces an onPause event an when the app is actually minimized.
+        _sharedPreferences.edit()
+                .putBoolean(_permissionsController.SHARED_PREFS_ONSTOP_KEY, _permissionsController.SHARED_PREFS_ONSTOP_TRUE)
+                .apply();
         stopLocation();
     }
 

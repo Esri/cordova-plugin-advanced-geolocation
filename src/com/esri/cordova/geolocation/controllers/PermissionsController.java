@@ -36,8 +36,6 @@ public class PermissionsController {
     private static SharedPreferences _sharedPreferences;
     private static CallbackContext _callbackContext;
     private static int _denyCounter = 0;
-    private static int _rationaleCounter = 0;
-    private static boolean _requestPendingFlag = false; //if a perms request is pending or not
 
     private static final String SHARED_PREFS_LOCATION = "LocationSettings";
     private static final String SHARED_PREFS_FIRST_RUN = "firstRun";
@@ -49,8 +47,12 @@ public class PermissionsController {
     private static final int REQUEST_LOCATION_PERMS_CODE = 10;
 
     public final int ALLOW = 0;
+    public final int ALLOW_ONCE = 1;
     public final int DENIED = -1;
     public final int DENIED_NOASK = -2;
+    public final String SHARED_PREFS_ONSTOP_KEY = "onstop";
+    public final boolean SHARED_PREFS_ONSTOP_TRUE = true;
+    public final boolean SHARED_PREFS_ONSTOP_FALSE = false;
 
     public PermissionsController(
             Activity activity,
@@ -62,32 +64,46 @@ public class PermissionsController {
         _sharedPreferences = PreferenceManager.getDefaultSharedPreferences(_activity);
     }
 
-    public void validatePermissions(){
-        final boolean permissions = getAppPermissions();
-//        final boolean rationale = getShowRationale();
-        final boolean firstRun = getIsFirstRun();
-    }
-
     public int getShowRationale(){
 
         int rationale = DENIED;
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            final boolean fineLocation = _activity.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION);
-            final boolean coarseLocation = _activity.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION);
-Log.d(TAG,"Counter: " + _denyCounter);
-            if(fineLocation && coarseLocation && _denyCounter <= 1){
-                Log.d(TAG,"rationale 1");
+            final boolean fineLocationRationale = _activity.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION);
+            final boolean coarseLocationRationale = _activity.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION);
+            final boolean didMinimize = _sharedPreferences.getBoolean(SHARED_PREFS_ONSTOP_KEY, false);
+
+Log.d(TAG,"Counter: " + _denyCounter + ", didMin = " + didMinimize + ", fineLoc: " + fineLocationRationale +", sharedPrefs: " + getNoAsk());
+            // Minimized app
+//            if(fineLocationRationale && coarseLocationRationale && _denyCounter == 0){
+//                Log.d(TAG,"rationale #0");
+//                rationale = ALLOW_ONCE;
+//            }
+//            // Reinstall after having denied permissions in the previous install
+//            else if(!fineLocationRationale || !coarseLocationRationale && _denyCounter > 0 && didMinimize == false){
+//                Log.d(TAG,"rationale #1");
+//                rationale = ALLOW_ONCE;
+//            }
+            // Denied at least once
+            if(fineLocationRationale && coarseLocationRationale && _denyCounter <= 1){
+                Log.d(TAG,"rationale #2");
                 rationale = ALLOW;
             }
-            if(fineLocation && coarseLocation && _denyCounter > 1){
-                Log.d(TAG,"rationale 2");
+            // Start up > Denied twice
+            else if(fineLocationRationale && coarseLocationRationale && _denyCounter > 1){
+                Log.d(TAG,"rationale #3");
                 rationale = DENIED;
             }
-            if(!fineLocation || !coarseLocation){
+            // Don't ask me again check box
+            else if((!fineLocationRationale || !coarseLocationRationale) && getNoAsk()){
+                Log.d(TAG,"rationale #4");
                 rationale = DENIED_NOASK;
             }
+            else if(!fineLocationRationale || !coarseLocationRationale){
+                rationale = ALLOW;
+            }
         }
+Log.d(TAG,"Rationale = " + rationale);
 
         return rationale;
     }
@@ -107,46 +123,40 @@ Log.d(TAG,"Counter: " + _denyCounter);
      * @return boolean true indicates they don't want to be asked again.
      */
     public boolean getNoAsk(){
-        return getSharedPreferences(SHARED_PREFS_LOCATION).equals(SHARED_PREFS_GEO_DENIED_NOASK);
-    }
 
-    public boolean getAllowRationale(){
-        boolean allow = false;
+        boolean noAsk = false;
 
-        if(getShowRationale() == ALLOW && _denyCounter < 1){
-            allow = true;
+        if(getSharedPreferences(SHARED_PREFS_LOCATION).equals(SHARED_PREFS_GEO_DENIED_NOASK)){
+            noAsk = true;
         }
 
-        return allow;
-    }
-
-    public boolean getAllowRequestPermissions(){
-        _requestPendingFlag = true;
-        boolean allow = false;
-
-        if(_denyCounter == 0){
-            allow = true;
-        }
-
-        return allow;
+        return noAsk;
     }
 
     public void handleOnPause(){
-        // Requesting permissions triggers an onPause event
-        // Since we can't distinguish between this forced event and device-related events
-        // we use a pending flag as a hack to prevent false positives.
-        if(!_requestPendingFlag) {
-            _denyCounter = 0; //reset the deny counter
+        //TODO
+    }
+
+    public void handleOnInitialize(){
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            final boolean fineLocationRationale = _activity.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION);
+            final boolean coarseLocationRationale = _activity.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION);
+
+            if(fineLocationRationale || coarseLocationRationale){
+                _denyCounter++;
+            }
+            else {
+                _denyCounter = 0;
+            }
         }
     }
 
     public void handleOnRequestDenied(){
-        _requestPendingFlag = false;
         _denyCounter++;
     }
 
     public void handleOnRequestAllowed(){
-        _requestPendingFlag = false;
         setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_GRANTED);
         _denyCounter = 0;
     }
