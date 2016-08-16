@@ -17,6 +17,7 @@
 package com.esri.cordova.geolocation;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
@@ -188,25 +189,10 @@ public class AdvancedGeolocation extends CordovaPlugin{
                 _permissionsController.handleOnRequestDenied();
                 final int showRationale = _permissionsController.getShowRationale();
 
-                // Show the rationale dialog
-                if(showRationale == _permissionsController.ALLOW){
-//                final GPSPermsDeniedDialogFragment gpsPermsDeniedDialogFragment = new GPSPermsDeniedDialogFragment();
-//                gpsPermsDeniedDialogFragment.show(_cordovaActivity.getFragmentManager(), "GPSPermsDeniedAlert");
-                    requestPermissions();
-                }
-
-                // We've already shown the rationale dialog
-                if(showRationale == _permissionsController.DENIED){
-                    Log.w(TAG, "Rationale already shown, geolocation denied twice");
-                    setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_DENIED);
-                    sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED);
-                }
-
                 // User doesn't want to see any more preference-related dialog boxes
                 if(showRationale == _permissionsController.DENIED_NOASK){
-                    Log.w(TAG, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
-                    setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_DENIED_NOASK);
-                    sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
+                    Log.w(TAG, "Callback: " + ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
+                    setSharedPreferences(_permissionsController.SHARED_PREFS_LOCATION, _permissionsController.SHARED_PREFS_GEO_DENIED_NOASK);
                 }
             }
         }
@@ -217,22 +203,22 @@ public class AdvancedGeolocation extends CordovaPlugin{
             // Reference: Permission Groups https://developer.android.com/guide/topics/security/permissions.html#normal-dangerous
             // As of July 2016 - ACCESS_WIFI_STATE and ACCESS_NETWORK_STATE are not considered dangerous permissions
 Log.d(TAG, "validatePermissions()");
-            final boolean permissionGranted = _permissionsController.getAppPermissions();
-            final int whatPermission = _permissionsController.getShowRationale();
+//            final boolean permissionGranted = _permissionsController.getAppPermissions();
+            final int showRationale = _permissionsController.getShowRationale();
 
-            if(permissionGranted){
+            if(_permissionsController.getAppPermissions()){
 //                setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_GRANTED);
                 startLocation();
             }
             // The user has said to never ask again about activating location services
-            else if(whatPermission == _permissionsController.DENIED_NOASK){
+            else if(showRationale == _permissionsController.DENIED_NOASK){
                 Log.d(TAG, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
                 sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
             }
-            else if(whatPermission == _permissionsController.ALLOW) {
+            else if(showRationale == _permissionsController.ALLOW) {
                 requestPermissions();
             }
-            else if(whatPermission == _permissionsController.DENIED) {
+            else if(showRationale == _permissionsController.DENIED) {
                 Log.w(TAG, "Rationale already shown, geolocation denied twice");
                 sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED);
             }
