@@ -55,7 +55,6 @@ public final class GPSController implements Runnable {
     private static LocationDataBuffer _locationDataBuffer = null;
 
     private static final String TAG = "GeolocationPlugin";
-    public static final String GPS_PROVIDER = "gps";
 
     public GPSController(
             CordovaInterface cordova,
@@ -102,7 +101,7 @@ public final class GPSController implements Runnable {
                         + throwable.getMessage());
 
                     sendCallback(PluginResult.Status.ERROR,
-                            JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, ErrorMessages.GPS_THREAD_EXCEPTION()));
+                            JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, ErrorMessages.UNCAUGHT_THREAD_EXCEPTION()));
                     stopLocation();
                 }
             });
@@ -289,18 +288,18 @@ public final class GPSController implements Runnable {
                 switch (status) {
                     case LocationProvider.OUT_OF_SERVICE:
                         // Reference: https://developer.android.com/reference/android/location/LocationProvider.html#OUT_OF_SERVICE
-                        Log.d(TAG, "Location Status Changed: GPS Out of Service");
+                        Log.d(TAG, "Location Status Changed: " + ErrorMessages.GPS_OUT_OF_SERVICE().message);
                         sendCallback(PluginResult.Status.ERROR,
                                 JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, ErrorMessages.GPS_OUT_OF_SERVICE()));
 
                         break;
                     case LocationProvider.TEMPORARILY_UNAVAILABLE:
-                        Log.d(TAG, "Location Status Changed: GPS Temporarily Unavailable");
+                        Log.d(TAG, "Location Status Changed: " + ErrorMessages.GPS_UNAVAILABLE().message);
                         sendCallback(PluginResult.Status.ERROR,
                                 JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, ErrorMessages.GPS_UNAVAILABLE()));
                         break;
                     case LocationProvider.AVAILABLE:
-                        Log.d(TAG, "Status Changed: GPS Available");
+                        Log.d(TAG, "Location Status Changed: GPS Available");
                         break;
                 }
             }

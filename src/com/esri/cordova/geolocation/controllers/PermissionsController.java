@@ -52,7 +52,7 @@ public class PermissionsController {
             final boolean fineLocationRationale = _activity.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION);
             final boolean coarseLocationRationale = _activity.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION);
 
-            Log.d(TAG,"Counter: " + _denyCounter + ", showRationale: " + fineLocationRationale);
+            Log.d(TAG,"Counter: " + _denyCounter + ", display rationale? " + fineLocationRationale);
 
             // Denied at least once
             if(fineLocationRationale && coarseLocationRationale && _denyCounter <= 1){
@@ -74,8 +74,6 @@ public class PermissionsController {
                 rationale = ALLOW;
             }
         }
-
-        Log.d(TAG,"Rationale = " + rationale);
 
         return rationale;
     }

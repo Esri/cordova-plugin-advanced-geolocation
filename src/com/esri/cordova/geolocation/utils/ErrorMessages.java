@@ -26,6 +26,8 @@ public class ErrorMessages {
     // Location request errors are 100 series
     public static final String NETWORK_UNAVAILABLE = "{\"error\": \"101\", \"msg\":\"Network location requested but network is not available\"}";
 
+    public static final String JSON_EXCEPTION =  "{\"error\": \"130\", \"msg\":\"Problem in JSONHelper while processing JSON. \"}";
+
     // Configuration errors are 900 series
     public static final String INCORRECT_CONFIG_ARGS = "{\"error\": \"901\", \"msg\": \"There was a problem with the optional configuration arguments\"}";
 
@@ -45,9 +47,25 @@ public class ErrorMessages {
         return err;
     }
 
-    public static Error LOCATION_SERVICES_UNAVAILABLE(){
+    public static Error CELL_DATA_IS_NULL(){
+        final Error err = new Error();
+        err.number = "104";
+        err.message = "Cell data is returning null. This option may not be supported on the device";
+
+        return err;
+    }
+
+    public static Error CELL_DATA_MIN_VERSION(){
         final Error err = new Error();
         err.number = "105";
+        err.message = "WARNING: A minimum SDK v17 is required for CellLocation to work, and  minimum SDK v21 is REQUIRED for this library";
+
+        return err;
+    }
+
+    public static Error LOCATION_SERVICES_UNAVAILABLE(){
+        final Error err = new Error();
+        err.number = "110";
         err.message = "Neither GPS nor network location is available";
 
         return err;
@@ -55,7 +73,7 @@ public class ErrorMessages {
 
     public static Error LOCATION_SERVICES_DENIED_NOASK(){
         final Error err = new Error();
-        err.number = "106";
+        err.number = "111";
         err.message = "Location services were denied by user with the flag to never ask again";
 
         return err;
@@ -63,7 +81,7 @@ public class ErrorMessages {
 
     public static Error LOCATION_SERVICES_DENIED(){
         final Error err = new Error();
-        err.number = "107";
+        err.number = "112";
         err.message = "Location services were denied by user";
 
         return err;
@@ -71,7 +89,7 @@ public class ErrorMessages {
 
     public static Error GPS_UNAVAILABLE(){
         final Error err = new Error();
-        err.number = "110";
+        err.number = "120";
         err.message = "GPS location requested but GPS is not available";
 
         return err;
@@ -79,16 +97,32 @@ public class ErrorMessages {
 
     public static Error GPS_OUT_OF_SERVICE(){
         final Error err = new Error();
-        err.number = "111";
+        err.number = "121";
         err.message = "GPS is out of service";
 
         return err;
     }
 
-    public static Error GPS_THREAD_EXCEPTION(){
+    public static Error UNCAUGHT_THREAD_EXCEPTION(){
         final Error err = new Error();
-        err.number = "112";
-        err.message = "Library failure: uncaught exception in GPS Controller.";
+        err.number = "122";
+        err.message = "Uncaught thread exception. See logcat for full exception dump";
+
+        return err;
+    }
+
+    public static Error NETWORK_PROVIDER_UNAVAILABLE(){
+        final Error err = new Error();
+        err.number = "140";
+        err.message = "Network location requested but network is not available. Check internet connection";
+
+        return err;
+    }
+
+    public static Error NETWORK_PROVIDER_OUT_OF_SERVICE(){
+        final Error err = new Error();
+        err.number = "141";
+        err.message = "Network location requested but it's out of service. Check your device";
 
         return err;
     }
