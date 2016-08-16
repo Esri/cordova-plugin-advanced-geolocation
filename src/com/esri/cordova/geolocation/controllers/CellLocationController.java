@@ -36,6 +36,7 @@ import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 
+import com.esri.cordova.geolocation.utils.ErrorMessages;
 import com.esri.cordova.geolocation.utils.JSONHelper;
 
 import org.apache.cordova.CallbackContext;
@@ -48,7 +49,6 @@ public final class CellLocationController implements Runnable{
 
     public static final String CELLINFO_PROVIDER = "cell";
     private static final String TAG = "GeolocationPlugin";
-    private static final int MIN_BUILD_VER = 21;
     private static CallbackContext _callbackContext; // Threadsafe
     private static TelephonyManager _telephonyManager = null;
     private static PhoneStateListener _phoneStateListener = null;
@@ -80,6 +80,11 @@ public final class CellLocationController implements Runnable{
                 Looper.loop();
             }
         }
+        else {
+            Log.e(TAG, ErrorMessages.CELL_DATA_MIN_VERSION().message);
+            sendCallback(PluginResult.Status.ERROR,
+                    JSONHelper.errorJSON(CELLINFO_PROVIDER, ErrorMessages.CELL_DATA_MIN_VERSION()));
+        }
     }
 
     public void startLocation(){
@@ -91,6 +96,8 @@ public final class CellLocationController implements Runnable{
                 public void uncaughtException(Thread thread, Throwable throwable) {
                 Log.d(TAG, "Failing gracefully after detecting an uncaught exception on CellLocationController thread. "
                         + throwable.getMessage());
+                sendCallback(PluginResult.Status.ERROR,
+                    JSONHelper.errorJSON(CELLINFO_PROVIDER, ErrorMessages.UNCAUGHT_THREAD_EXCEPTION()));
                 stopLocation();
                 }
             });
@@ -106,6 +113,8 @@ public final class CellLocationController implements Runnable{
             }
             else {
                 Log.e(TAG, "Unable to start CellLocationController: no internet connection.");
+                sendCallback(PluginResult.Status.ERROR,
+                    JSONHelper.errorJSON(CELLINFO_PROVIDER, ErrorMessages.CELL_DATA_NOT_AVAILABLE()));
             }
         }
     }
@@ -196,7 +205,7 @@ public final class CellLocationController implements Runnable{
             // * could be a device that doesn't support this capability.
             // * could be incorrect permissions: ACCESS_COARSE_LOCATION
             sendCallback(PluginResult.Status.ERROR,
-                    JSONHelper.errorJSON(CELLINFO_PROVIDER, "Cell location data is returning as null"));
+                    JSONHelper.errorJSON(CELLINFO_PROVIDER, ErrorMessages.CELL_DATA_IS_NULL()));
         }
     }
 
@@ -207,8 +216,7 @@ public final class CellLocationController implements Runnable{
     private static boolean versionCheck(){
         boolean verified = true;
         final int version = Build.VERSION.SDK_INT;
-        if(version < MIN_BUILD_VER){
-            Log.e(TAG, "WARNING: A minimum SDK v17 is required for CellLocation to work, and  minimum SDK v21 is REQUIRED for this library.");
+        if(version < Build.VERSION_CODES.LOLLIPOP){
             verified = false;
         }
 
