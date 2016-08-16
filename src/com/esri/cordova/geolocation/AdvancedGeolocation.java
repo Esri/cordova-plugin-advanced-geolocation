@@ -193,7 +193,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
                 // User doesn't want to see any more preference-related dialog boxes
                 if(showRationale == _permissionsController.DENIED_NOASK){
                     Log.w(TAG, "Callback: " + ErrorMessages.LOCATION_SERVICES_DENIED_NOASK().message);
-                    setSharedPreferences(_permissionsController.SHARED_PREFS_LOCATION, _permissionsController.SHARED_PREFS_GEO_DENIED_NOASK);
+                    setSharedPreferences(_permissionsController.SHARED_PREFS_LOCATION_KEY, _permissionsController.SHARED_PREFS_GEO_DENIED_NOASK);
                 }
             }
         }

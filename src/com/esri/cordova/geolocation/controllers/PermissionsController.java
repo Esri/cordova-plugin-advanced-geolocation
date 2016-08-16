@@ -34,7 +34,7 @@ public class PermissionsController {
     public final int ALLOW = 0;
     public final int DENIED = -1;
     public final int DENIED_NOASK = -2;
-    public final String SHARED_PREFS_LOCATION = "LocationSettings";
+    public final String SHARED_PREFS_LOCATION_KEY = "LocationSettings";
     public final String SHARED_PREFS_GEO_DENIED_NOASK = "geoDeniedNoAsk";  // denied and don't ask again
 
     public PermissionsController(
