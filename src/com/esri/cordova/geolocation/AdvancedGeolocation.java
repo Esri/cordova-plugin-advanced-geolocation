@@ -17,7 +17,6 @@
 package com.esri.cordova.geolocation;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
@@ -37,6 +36,7 @@ import com.esri.cordova.geolocation.controllers.PermissionsController;
 import com.esri.cordova.geolocation.fragments.GPSAlertDialogFragment;
 import com.esri.cordova.geolocation.fragments.NetworkUnavailableDialogFragment;
 import com.esri.cordova.geolocation.utils.ErrorMessages;
+import com.esri.cordova.geolocation.utils.JSONHelper;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -58,6 +58,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
     public static final String PROVIDERS_GPS = "gps";
     public static final String PROVIDERS_NETWORK = "network";
     public static final String PROVIDERS_CELL = "cell";
+    public static final String PROVIDER_PRIMARY = "application"; // references this main controller and not tied to a sensor
 
     private static final String TAG = "GeolocationPlugin";
     private static final String SHARED_PREFS_LOCATION = "LocationSettings";
@@ -191,7 +192,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
 
                 // User doesn't want to see any more preference-related dialog boxes
                 if(showRationale == _permissionsController.DENIED_NOASK){
-                    Log.w(TAG, "Callback: " + ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
+                    Log.w(TAG, "Callback: " + ErrorMessages.LOCATION_SERVICES_DENIED_NOASK().message);
                     setSharedPreferences(_permissionsController.SHARED_PREFS_LOCATION, _permissionsController.SHARED_PREFS_GEO_DENIED_NOASK);
                 }
             }
@@ -202,25 +203,26 @@ public class AdvancedGeolocation extends CordovaPlugin{
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // Reference: Permission Groups https://developer.android.com/guide/topics/security/permissions.html#normal-dangerous
             // As of July 2016 - ACCESS_WIFI_STATE and ACCESS_NETWORK_STATE are not considered dangerous permissions
-Log.d(TAG, "validatePermissions()");
-//            final boolean permissionGranted = _permissionsController.getAppPermissions();
+            Log.d(TAG, "validatePermissions()");
+
             final int showRationale = _permissionsController.getShowRationale();
 
             if(_permissionsController.getAppPermissions()){
-//                setSharedPreferences(SHARED_PREFS_LOCATION, SHARED_PREFS_GEO_GRANTED);
                 startLocation();
             }
             // The user has said to never ask again about activating location services
             else if(showRationale == _permissionsController.DENIED_NOASK){
-                Log.d(TAG, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
-                sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK);
+                Log.w(TAG, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK().message);
+                sendCallback(PluginResult.Status.ERROR,
+                        JSONHelper.errorJSON(PROVIDER_PRIMARY, ErrorMessages.LOCATION_SERVICES_DENIED_NOASK()));
             }
             else if(showRationale == _permissionsController.ALLOW) {
                 requestPermissions();
             }
             else if(showRationale == _permissionsController.DENIED) {
                 Log.w(TAG, "Rationale already shown, geolocation denied twice");
-                sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_DENIED);
+                sendCallback(PluginResult.Status.ERROR,
+                        JSONHelper.errorJSON(PROVIDER_PRIMARY, ErrorMessages.LOCATION_SERVICES_DENIED()));
             }
         }
         else {
@@ -363,8 +365,9 @@ Log.d(TAG, "validatePermissions()");
     }
 
     private void cellDataNotAllowed(){
-        Log.w(TAG, ErrorMessages.CELLDATA_NOT_ALLOWED);
-        sendCallback(PluginResult.Status.ERROR, ErrorMessages.CELLDATA_NOT_ALLOWED);
+        Log.w(TAG, ErrorMessages.CELL_DATA_NOT_ALLOWED().message);
+        sendCallback(PluginResult.Status.ERROR,
+                JSONHelper.errorJSON(PROVIDER_PRIMARY, ErrorMessages.CELL_DATA_NOT_ALLOWED()));
     }
 
     //
@@ -467,14 +470,16 @@ Log.d(TAG, "validatePermissions()");
     private void alertDialog(boolean gpsEnabled, boolean networkLocationEnabled, boolean celllularEnabled){
 
         if(!gpsEnabled || !networkLocationEnabled){
-            sendCallback(PluginResult.Status.ERROR, ErrorMessages.LOCATION_SERVICES_UNAVAILABLE);
+            sendCallback(PluginResult.Status.ERROR,
+                    JSONHelper.errorJSON(PROVIDER_PRIMARY, ErrorMessages.LOCATION_SERVICES_UNAVAILABLE()));
 
             final DialogFragment gpsFragment = new GPSAlertDialogFragment();
             gpsFragment.show(_cordovaActivity.getFragmentManager(), "GPSAlert");
         }
 
         if(!celllularEnabled){
-            sendCallback(PluginResult.Status.ERROR, ErrorMessages.CELLDATA_UNAVALABLE);
+            sendCallback(PluginResult.Status.ERROR,
+                    JSONHelper.errorJSON(PROVIDER_PRIMARY, ErrorMessages.CELL_DATA_NOT_AVAILABLE()));
 
             final DialogFragment networkUnavailableFragment = new NetworkUnavailableDialogFragment();
             networkUnavailableFragment.show(_cordovaActivity.getFragmentManager(), "NetworkUnavailableAlert");

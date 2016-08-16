@@ -25,16 +25,49 @@ public class ErrorMessages {
 
     // Location request errors are 100 series
     public static final String NETWORK_UNAVAILABLE = "{\"error\": \"101\", \"msg\":\"Network location requested but network is not available\"}";
-    public static final String CELLDATA_UNAVALABLE = "{\"error\": \"102\", \"msg\":\"Cell data requested but unavailable. Check internet connection\"}";
-    public static final String CELLDATA_NOT_ALLOWED = "{\"error\": \"103\", \"msg\":\"Cell Data option is not available on Android API versions < 18\"}";
-    public static final String LOCATION_SERVICES_UNAVAILABLE = "{\"error\": \"105\",\"msg\": \"Neither GPS nor network location is available\"}";
-    public static final String LOCATION_SERVICES_DENIED_NOASK = "{\"error\": \"106\",\"msg\": \"Location services were denied by user with the flag to never ask again\"}";
-    public static final String LOCATION_SERVICES_DENIED = "{\"error\": \"107\",\"msg\": \"Location services were denied by user\"}";
 
     // Configuration errors are 900 series
     public static final String INCORRECT_CONFIG_ARGS = "{\"error\": \"901\", \"msg\": \"There was a problem with the optional configuration arguments\"}";
 
+    public static Error CELL_DATA_NOT_AVAILABLE(){
+        final Error err = new Error();
+        err.number = "102";
+        err.message = "Cell data requested but unavailable. Check internet connection";
 
+        return err;
+    }
+
+    public static Error CELL_DATA_NOT_ALLOWED(){
+        final Error err = new Error();
+        err.number = "103";
+        err.message = "Cell Data option is not available on Android API versions < 18";
+
+        return err;
+    }
+
+    public static Error LOCATION_SERVICES_UNAVAILABLE(){
+        final Error err = new Error();
+        err.number = "105";
+        err.message = "Neither GPS nor network location is available";
+
+        return err;
+    }
+
+    public static Error LOCATION_SERVICES_DENIED_NOASK(){
+        final Error err = new Error();
+        err.number = "106";
+        err.message = "Location services were denied by user with the flag to never ask again";
+
+        return err;
+    }
+
+    public static Error LOCATION_SERVICES_DENIED(){
+        final Error err = new Error();
+        err.number = "107";
+        err.message = "Location services were denied by user";
+
+        return err;
+    }
 
     public static Error GPS_UNAVAILABLE(){
         final Error err = new Error();
