@@ -31,6 +31,8 @@ import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 
+import com.esri.cordova.geolocation.model.Error;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -372,6 +374,28 @@ public final class JSONHelper {
         try {
             json.put("provider", provider);
             json.put("error", error);
+        }
+        catch (JSONException exc) {
+            Log.d(TAG, exc.getMessage());
+        }
+
+        return json.toString();
+    }
+
+    /**
+     * Helper method for reporting errors coming off a location provider
+     * @param provider Indicates if this error is coming from gps or network provider
+     * @param error The actual error being thrown by the provider
+     * @return Error string
+     */
+    public static String errorJSON(String provider, Error error) {
+
+        final JSONObject json = new JSONObject();
+
+        try {
+            json.put("provider", provider);
+            json.put("error", error.number);
+            json.put("msg", error.message);
         }
         catch (JSONException exc) {
             Log.d(TAG, exc.getMessage());

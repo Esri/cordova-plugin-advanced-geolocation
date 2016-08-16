@@ -17,6 +17,7 @@
 package com.esri.cordova.geolocation.controllers;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -37,10 +38,8 @@ public class PermissionsController {
     private static CallbackContext _callbackContext;
     private static int _denyCounter = 0;
 
-    private static final String SHARED_PREFS_LOCATION = "LocationSettings";
     private static final String SHARED_PREFS_FIRST_RUN = "firstRun";
     private static final String SHARED_PREFS_GEO_DENIED = "geoDenied";             // basic denied
-    private static final String SHARED_PREFS_GEO_DENIED_NOASK = "geoDeniedNoAsk";  // denied and don't ask again
     private static final String SHARED_PREFS_GEO_GRANTED = "geoGranted";
     private static final String SHARED_PREFS_DENIED_COUNTER = "deniedCounter";
     private static final String TAG = "GeolocationPlugin";
@@ -53,6 +52,8 @@ public class PermissionsController {
     public final String SHARED_PREFS_ONSTOP_KEY = "onstop";
     public final boolean SHARED_PREFS_ONSTOP_TRUE = true;
     public final boolean SHARED_PREFS_ONSTOP_FALSE = false;
+    public final String SHARED_PREFS_LOCATION = "LocationSettings";
+    public final String SHARED_PREFS_GEO_DENIED_NOASK = "geoDeniedNoAsk";  // denied and don't ask again
 
     public PermissionsController(
             Activity activity,
@@ -73,7 +74,7 @@ public class PermissionsController {
             final boolean coarseLocationRationale = _activity.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION);
             final boolean didMinimize = _sharedPreferences.getBoolean(SHARED_PREFS_ONSTOP_KEY, false);
 
-Log.d(TAG,"Counter: " + _denyCounter + ", didMin = " + didMinimize + ", fineLoc: " + fineLocationRationale +", sharedPrefs: " + getNoAsk());
+Log.d(TAG,"Counter: " + _denyCounter + ", didMin = " + didMinimize + ", showRationale: " + fineLocationRationale +", sharedPrefs: " + getNoAsk());
             // Minimized app
 //            if(fineLocationRationale && coarseLocationRationale && _denyCounter == 0){
 //                Log.d(TAG,"rationale #0");
@@ -95,11 +96,12 @@ Log.d(TAG,"Counter: " + _denyCounter + ", didMin = " + didMinimize + ", fineLoc:
                 rationale = DENIED;
             }
             // Don't ask me again check box
-            else if((!fineLocationRationale || !coarseLocationRationale) && getNoAsk()){
+            else if((!fineLocationRationale || !coarseLocationRationale) && _denyCounter > 1){
                 Log.d(TAG,"rationale #4");
                 rationale = DENIED_NOASK;
             }
             else if(!fineLocationRationale || !coarseLocationRationale){
+                Log.d(TAG, "ALLOW !!! " + getAppPermissions());
                 rationale = ALLOW;
             }
         }
@@ -125,7 +127,7 @@ Log.d(TAG,"Rationale = " + rationale);
     public boolean getNoAsk(){
 
         boolean noAsk = false;
-
+Log.w(TAG, "GET NO ASK: " + getSharedPreferences(SHARED_PREFS_LOCATION));
         if(getSharedPreferences(SHARED_PREFS_LOCATION).equals(SHARED_PREFS_GEO_DENIED_NOASK)){
             noAsk = true;
         }
@@ -137,6 +139,7 @@ Log.d(TAG,"Rationale = " + rationale);
         //TODO
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
     public void handleOnInitialize(){
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
