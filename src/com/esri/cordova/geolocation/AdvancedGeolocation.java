@@ -97,7 +97,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
         _cordova = cordova;
         _cordovaActivity = cordova.getActivity();
         _sharedPreferences = PreferenceManager.getDefaultSharedPreferences(_cordovaActivity);
-        _permissionsController = new PermissionsController(_cordovaActivity,this, _cordova);
+        _permissionsController = new PermissionsController(_cordovaActivity, _cordova);
         _permissionsController.handleOnInitialize();
         removeActionPreferences();
         Log.d(TAG, "Initialized");
@@ -402,12 +402,6 @@ public class AdvancedGeolocation extends CordovaPlugin{
 
     public void onStop(){
         Log.d(TAG, "onStop");
-
-        // Track when the application is minimized. This way we can differentiate between
-        // when requestPermissions() forces an onPause event an when the app is actually minimized.
-        _sharedPreferences.edit()
-                .putBoolean(_permissionsController.SHARED_PREFS_ONSTOP_KEY, _permissionsController.SHARED_PREFS_ONSTOP_TRUE)
-                .apply();
         stopLocation();
     }
 
