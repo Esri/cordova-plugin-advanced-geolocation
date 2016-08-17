@@ -2,7 +2,8 @@
 
 set -e # Exit script on any error
 
-#echo "This is a shell script for creating a cordova repo."
+# "This is a shell script for manually creating a cordova repo"
+# "for the purpose of making changes or updating the github repo"
 
 read -p "Press [Enter] to create Cordova project…"
 
