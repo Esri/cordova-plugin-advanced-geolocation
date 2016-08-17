@@ -23,11 +23,6 @@ import com.esri.cordova.geolocation.model.Error;
  */
 public class ErrorMessages {
 
-    // Location request errors are 100 series
-    public static final String NETWORK_UNAVAILABLE = "{\"error\": \"101\", \"msg\":\"Network location requested but network is not available\"}";
-
-    public static final String JSON_EXCEPTION =  "{\"error\": \"130\", \"msg\":\"Problem in JSONHelper while processing JSON. \"}";
-
     // Configuration errors are 900 series
     public static final String INCORRECT_CONFIG_ARGS = "{\"error\": \"901\", \"msg\": \"There was a problem with the optional configuration arguments\"}";
 
@@ -110,6 +105,8 @@ public class ErrorMessages {
 
         return err;
     }
+
+    public static final String JSON_EXCEPTION =  "{\"error\": \"130\", \"msg\":\"Problem in JSONHelper while processing JSON. \"}";
 
     public static Error NETWORK_PROVIDER_UNAVAILABLE(){
         final Error err = new Error();

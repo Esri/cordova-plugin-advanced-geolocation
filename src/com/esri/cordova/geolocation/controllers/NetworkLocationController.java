@@ -90,7 +90,7 @@ public final class NetworkLocationController implements Runnable {
             Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
                 public void uncaughtException(Thread thread, Throwable throwable) {
-                Log.d(TAG, "Failing gracefully after detecting an uncaught exception on NetworkLocationController thread."
+                Log.e(TAG, "Failing gracefully after detecting an uncaught exception on NetworkLocationController thread."
                         + throwable.getMessage());
                 sendCallback(PluginResult.Status.ERROR,
                     JSONHelper.errorJSON(LocationManager.NETWORK_PROVIDER, ErrorMessages.UNCAUGHT_THREAD_EXCEPTION()));
@@ -121,13 +121,12 @@ public final class NetworkLocationController implements Runnable {
                     }
                     catch(SecurityException exc){
                         Log.e(TAG, exc.getMessage());
+                        sendCallback(PluginResult.Status.ERROR, exc.getMessage());
                     }
-
-                    final String parsedLocation;
 
                     // If the provider is disabled or currently unavailable then null may be returned on some devices
                     if(location != null) {
-                        parsedLocation = JSONHelper.locationJSON(LocationManager.NETWORK_PROVIDER, location, true);
+                        final String parsedLocation = JSONHelper.locationJSON(LocationManager.NETWORK_PROVIDER, location, true);
                         sendCallback(PluginResult.Status.OK, parsedLocation);
                     }
                 }
@@ -259,7 +258,7 @@ public final class NetworkLocationController implements Runnable {
                         LocationManager.NETWORK_PROVIDER, _minTime, _minDistance, _locationListenerNetworkProvider);
 
             } catch (SecurityException exc) {
-                Log.d(TAG, "Unable to start network provider. " + exc.getMessage());
+                Log.e(TAG, "Unable to start network provider. " + exc.getMessage());
                 status.success = false;
                 status.exception = exc.getMessage();
             }

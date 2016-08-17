@@ -94,7 +94,7 @@ public final class CellLocationController implements Runnable{
             Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
                 public void uncaughtException(Thread thread, Throwable throwable) {
-                Log.d(TAG, "Failing gracefully after detecting an uncaught exception on CellLocationController thread. "
+                Log.e(TAG, "Failing gracefully after detecting an uncaught exception on CellLocationController thread. "
                         + throwable.getMessage());
                 sendCallback(PluginResult.Status.ERROR,
                     JSONHelper.errorJSON(CELLINFO_PROVIDER, ErrorMessages.UNCAUGHT_THREAD_EXCEPTION()));
@@ -215,8 +215,8 @@ public final class CellLocationController implements Runnable{
      */
     private static boolean versionCheck(){
         boolean verified = true;
-        final int version = Build.VERSION.SDK_INT;
-        if(version < Build.VERSION_CODES.LOLLIPOP){
+
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP){
             verified = false;
         }
 

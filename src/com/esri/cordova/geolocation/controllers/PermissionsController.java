@@ -17,7 +17,6 @@
 package com.esri.cordova.geolocation.controllers;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.os.Build;
 import android.util.Log;
@@ -44,6 +43,10 @@ public class PermissionsController {
         _cordovaInterface = cordovaInterface;
     }
 
+    /**
+     * Define our rules for when user is prompted for permissions access
+     * @return int
+     */
     public int getShowRationale(){
 
         int rationale = DENIED;
@@ -54,21 +57,22 @@ public class PermissionsController {
 
             Log.d(TAG,"Counter: " + _denyCounter + ", display rationale? " + fineLocationRationale);
 
-            // Denied at least once
+            // Permissions denied once
             if(fineLocationRationale && coarseLocationRationale && _denyCounter <= 1){
                 Log.d(TAG,"rationale 1: user denied perms at least once");
                 rationale = ALLOW;
             }
-            // Start up > Denied twice
+            // Start up > permissions denied twice
             else if(fineLocationRationale && coarseLocationRationale && _denyCounter > 1){
                 Log.d(TAG,"rationale 2: user has denied perms more than once");
                 rationale = DENIED;
             }
-            // Don't ask me again check box
+            // Don't ask me again check box has been set
             else if((!fineLocationRationale || !coarseLocationRationale) && _denyCounter > 1){
                 Log.d(TAG,"rationale 3: user has denied perms and asked to be never asked again");
                 rationale = DENIED_NOASK;
             }
+            // App start up
             else if(!fineLocationRationale || !coarseLocationRationale){
                 Log.d(TAG, "rationale 4: application startup - no perms are set yet");
                 rationale = ALLOW;
@@ -88,7 +92,9 @@ public class PermissionsController {
                 _cordovaInterface.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
+    /**
+     * When app is initialized we need to start tracking permissions
+     */
     public void handleOnInitialize(){
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
@@ -104,10 +110,16 @@ public class PermissionsController {
         }
     }
 
+    /**
+     * Track when permissions requests are denied
+     */
     public void handleOnRequestDenied(){
         _denyCounter++;
     }
 
+    /**
+     * Track when permissions requests are allowed
+     */
     public void handleOnRequestAllowed(){
         _denyCounter = 0;
     }

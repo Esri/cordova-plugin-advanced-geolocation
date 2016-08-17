@@ -92,12 +92,12 @@ public final class GPSController implements Runnable {
     public void startLocation(){
 
         if(!Thread.currentThread().isInterrupted()){
-            Log.d(TAG,"AVAILABLE PROVIDERS == " + _locationManager.getAllProviders().toString());
+            Log.i(TAG,"Available location providers: " + _locationManager.getAllProviders().toString());
 
             Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
                 public void uncaughtException(Thread thread, Throwable throwable) {
-                    Log.d(TAG, "Failing gracefully after detecting an uncaught exception on GPSController thread. "
+                    Log.e(TAG, "Failing gracefully after detecting an uncaught exception on GPSController thread. "
                         + throwable.getMessage());
 
                     sendCallback(PluginResult.Status.ERROR,
@@ -312,7 +312,7 @@ public final class GPSController implements Runnable {
                 stopLocation();
             }
         };
-        Log.d(TAG,"AVAILABLE PROVIDERS 3 == " + _locationManager.getAllProviders().toString());
+
         final InitStatus status = new InitStatus();
         final Boolean gpsProviderEnabled = _locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
@@ -325,7 +325,7 @@ public final class GPSController implements Runnable {
                         LocationManager.GPS_PROVIDER, _minTime, _minDistance, _locationListenerGPSProvider);
             }
             catch(SecurityException exc){
-                Log.d(TAG, "Unable to start GPS provider. " + exc.getMessage());
+                Log.e(TAG, "Unable to start GPS provider. " + exc.getMessage());
                 status.success = false;
                 status.exception = exc.getMessage();
             }

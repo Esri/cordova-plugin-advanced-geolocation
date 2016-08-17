@@ -61,14 +61,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
     public static final String PROVIDER_PRIMARY = "application"; // references this main controller and not tied to a sensor
 
     private static final String TAG = "GeolocationPlugin";
-    private static final String SHARED_PREFS_LOCATION = "LocationSettings";
-    private static final String SHARED_PREFS_FIRST_RUN = "firstRun";
-    private static final String SHARED_PREFS_GEO_DENIED = "denied";             // basic denied
-    private static final String SHARED_PREFS_GEO_DENIED_NOASK = "deniedNoAsk";  // denied and don't ask again
-    private static final String SHARED_PREFS_GEO_GRANTED = "granted";
     private static final String SHARED_PREFS_ACTION = "action";
-    private static final String SHARED_PREFS_ONSTOP_KEY = "onstop";
-    private static final boolean SHARED_PREFS_ONSTOP_VALUE = true;
     private static final int MIN_API_LEVEL = 18;
     private static final int REQUEST_LOCATION_PERMS_CODE = 10;
 
@@ -80,8 +73,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
     private static boolean _returnSatelliteData = false;
     private static boolean _buffer = false;
     private static int _bufferSize = 0;
-//TODO Remove _locationManager as a global
-    private static LocationManager _locationManager = null;
+
     private static GPSController _gpsController = null;
     private static NetworkLocationController _networkLocationController = null;
     private static CellLocationController _cellLocationController = null;
@@ -121,7 +113,6 @@ public class AdvancedGeolocation extends CordovaPlugin{
     private boolean runAction(final String action){
 
         if(action.equals("start")){
-//            startLocation();
             validatePermissions();
             return true;
         }
@@ -172,10 +163,6 @@ public class AdvancedGeolocation extends CordovaPlugin{
         // Repeat test cases except shut off device geo permissions
         //
         // Reference for Permission Denied Workflow: https://material.google.com/patterns/permissions.html#permissions-denied-permissions
-        //
-        // TODO - consider granting JS access system settings
-        // TODO - consider granting JS access app settings
-        // TODO - error messages when permissions not available
 
         if(requestCode == REQUEST_LOCATION_PERMS_CODE){
 
@@ -188,11 +175,10 @@ public class AdvancedGeolocation extends CordovaPlugin{
             else{
                 Log.w(TAG,"GEO PERMISSIONS DENIED.");
                 _permissionsController.handleOnRequestDenied();
-                final int showRationale = _permissionsController.getShowRationale();
 
                 // User doesn't want to see any more preference-related dialog boxes
-                if(showRationale == _permissionsController.DENIED_NOASK){
-                    Log.w(TAG, "Callback: " + ErrorMessages.LOCATION_SERVICES_DENIED_NOASK().message);
+                if(_permissionsController.getShowRationale() == _permissionsController.DENIED_NOASK){
+                    Log.w(TAG, "requestPermissions() Callback: " + ErrorMessages.LOCATION_SERVICES_DENIED_NOASK().message);
                     setSharedPreferences(_permissionsController.SHARED_PREFS_LOCATION_KEY, _permissionsController.SHARED_PREFS_GEO_DENIED_NOASK);
                 }
             }
@@ -226,7 +212,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
             }
         }
         else {
-            _locationManager = (LocationManager) _cordovaActivity.getSystemService(Context.LOCATION_SERVICE);
+            final LocationManager _locationManager = (LocationManager) _cordovaActivity.getSystemService(Context.LOCATION_SERVICE);
             final boolean networkLocationEnabled = _locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
             final boolean gpsEnabled = _locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
             final boolean networkEnabled = isInternetConnected(_cordovaActivity.getApplicationContext());
@@ -461,7 +447,13 @@ public class AdvancedGeolocation extends CordovaPlugin{
         _callbackContext.sendPluginResult(result);
     }
 
-    private void alertDialog(boolean gpsEnabled, boolean networkLocationEnabled, boolean celllularEnabled){
+    /**
+     * For working with pre-Android M security permissions
+     * @param gpsEnabled If the cacheManifest and system allow gps
+     * @param networkLocationEnabled If the cacheManifest and system allow network location access
+     * @param cellularEnabled If the cacheManifest and system allow cellular data access
+     */
+    private void alertDialog(boolean gpsEnabled, boolean networkLocationEnabled, boolean cellularEnabled){
 
         if(!gpsEnabled || !networkLocationEnabled){
             sendCallback(PluginResult.Status.ERROR,
@@ -471,7 +463,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
             gpsFragment.show(_cordovaActivity.getFragmentManager(), "GPSAlert");
         }
 
-        if(!celllularEnabled){
+        if(!cellularEnabled){
             sendCallback(PluginResult.Status.ERROR,
                     JSONHelper.errorJSON(PROVIDER_PRIMARY, ErrorMessages.CELL_DATA_NOT_AVAILABLE()));
 
