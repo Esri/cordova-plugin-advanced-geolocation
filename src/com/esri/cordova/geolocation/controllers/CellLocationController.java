@@ -17,8 +17,15 @@
 package com.esri.cordova.geolocation.controllers;
 
 /**
+ * Provides information derived from the cellular service of the device. Not all functionality
+ * is available on all devices and it also depends on the cellular providers capabilities.
+ *
  * IMPORTANT: This Class is only compatible with API Level 17 or greater
  * Reference: https://developer.android.com/reference/android/telephony/CellInfo.html
+ *
+ * IMPORTANT: This class will continue provide information even if the system Location
+ * settings is turned off as per security permission guidelines at Android 6.0 (API 23), reference:
+ * https://developer.android.com/guide/topics/security/permissions.html
  */
 
 import android.content.Context;
