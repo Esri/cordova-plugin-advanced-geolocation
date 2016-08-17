@@ -227,8 +227,6 @@ public final class GPSController implements Runnable {
 
         final InitStatus status = new InitStatus();
 
-        Log.d(TAG,"AVAILABLE PROVIDERS == " + _locationManager.getAllProviders().toString());
-
         final Boolean gpsProviderEnabled = _locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
         if(gpsProviderEnabled){
@@ -331,6 +329,7 @@ public final class GPSController implements Runnable {
             }
         }
         else {
+            Log.w(TAG, ErrorMessages.GPS_UNAVAILABLE().message);
             //GPS not enabled
             status.success = false;
             status.error = ErrorMessages.GPS_UNAVAILABLE();

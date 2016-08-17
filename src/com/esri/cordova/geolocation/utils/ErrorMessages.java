@@ -85,7 +85,7 @@ public class ErrorMessages {
     public static Error GPS_UNAVAILABLE(){
         final Error err = new Error();
         err.number = "120";
-        err.message = "GPS location requested but GPS is not available";
+        err.message = "GPS location requested but GPS is not available. Check system Location settings";
 
         return err;
     }
@@ -111,7 +111,7 @@ public class ErrorMessages {
     public static Error NETWORK_PROVIDER_UNAVAILABLE(){
         final Error err = new Error();
         err.number = "140";
-        err.message = "Network location requested but network is not available. Check internet connection";
+        err.message = "Network location requested but the provider is not available. Check system Location settings";
 
         return err;
     }

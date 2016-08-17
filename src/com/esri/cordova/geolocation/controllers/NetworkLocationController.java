@@ -106,8 +106,19 @@ public final class NetworkLocationController implements Runnable {
             final InitStatus networkListener = setLocationListenerNetworkProvider();
 
             if(!networkListener.success){
-                sendCallback(PluginResult.Status.ERROR,
-                        JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, networkListener.exception));
+//                sendCallback(PluginResult.Status.ERROR,
+//                        JSONHelper.errorJSON(LocationManager.NETWORK_PROVIDER, networkListener.exception));
+
+                if(networkListener.exception == null){
+                    // Handle custom error messages
+                    sendCallback(PluginResult.Status.ERROR,
+                            JSONHelper.errorJSON(LocationManager.NETWORK_PROVIDER, networkListener.error));
+                }
+                else if(networkListener.error == null){
+                    // Handle system exceptions
+                    sendCallback(PluginResult.Status.ERROR,
+                            JSONHelper.errorJSON(LocationManager.NETWORK_PROVIDER, networkListener.exception));
+                }
             }
             else {
 
@@ -129,17 +140,6 @@ public final class NetworkLocationController implements Runnable {
                         final String parsedLocation = JSONHelper.locationJSON(LocationManager.NETWORK_PROVIDER, location, true);
                         sendCallback(PluginResult.Status.OK, parsedLocation);
                     }
-                }
-
-                else if(networkListener.exception == null){
-                    // Handle custom error messages
-                    sendCallback(PluginResult.Status.ERROR,
-                            JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, networkListener.error));
-                }
-                else if(networkListener.error == null){
-                    // Handle system exceptions
-                    sendCallback(PluginResult.Status.ERROR,
-                            JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, networkListener.exception));
                 }
             }
         }
@@ -264,6 +264,7 @@ public final class NetworkLocationController implements Runnable {
             }
         }
         else {
+            Log.w(TAG, ErrorMessages.NETWORK_PROVIDER_UNAVAILABLE().message);
             status.success = false;
             status.error = ErrorMessages.NETWORK_PROVIDER_UNAVAILABLE();
         }
