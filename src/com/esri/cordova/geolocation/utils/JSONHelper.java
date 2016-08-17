@@ -114,7 +114,6 @@ public final class JSONHelper {
 
                 json.put("provider", provider);
                 json.put("timestamp", location.getTime());
-                json.put("error", "null");
                 json.put("latitude", location.getLatitude());
                 json.put("longitude", location.getLongitude());
                 json.put("altitude", location.getAltitude());
@@ -151,7 +150,6 @@ public final class JSONHelper {
                 json.put("provider", CELLINFO_PROVIDER);
                 json.put("type", CDMA);
                 json.put("timestamp", calendar.getTimeInMillis());
-                json.put("error", "null");
 
                 final CellIdentityCdma identityCdma = cellInfo.getCellIdentity();
 
@@ -187,7 +185,6 @@ public final class JSONHelper {
                 json.put("provider", CELLINFO_PROVIDER);
                 json.put("type", WCDMA);
                 json.put("timestamp", calendar.getTimeInMillis());
-                json.put("error", "null");
 
                 final CellIdentityWcdma identityWcdma = cellInfo.getCellIdentity();
 
@@ -219,7 +216,6 @@ public final class JSONHelper {
                 json.put("provider", CELLINFO_PROVIDER);
                 json.put("type", GSM);
                 json.put("timestamp", calendar.getTimeInMillis());
-                json.put("error", "null");
 
                 final CellIdentityGsm identityGsm = cellInfo.getCellIdentity();
 
@@ -250,7 +246,6 @@ public final class JSONHelper {
                 json.put("provider", CELLINFO_PROVIDER);
                 json.put("type", LTE);
                 json.put("timestamp", calendar.getTimeInMillis());
-                json.put("error", "null");
 
                 final CellIdentityLte identityLte = cellInfo.getCellIdentity();
 
@@ -283,7 +278,6 @@ public final class JSONHelper {
                 json.put("provider", CELLLOCATION_PROVIDER);
                 json.put("type", CDMA);
                 json.put("timestamp", calendar.getTimeInMillis());
-                json.put("error", "null");
                 json.put("baseStationId", location.getBaseStationId()); // -1 if unknown
                 json.put("networkId", location.getNetworkId()); // -1 if unknown
                 json.put("systemId", location.getSystemId()); // -1 if unknown
@@ -314,7 +308,6 @@ public final class JSONHelper {
                 json.put("provider", CELLLOCATION_PROVIDER);
                 json.put("type", GSM);
                 json.put("timestamp", calendar.getTimeInMillis());
-                json.put("error", "null");
                 json.put("cid", location.getCid());
                 json.put("lac", location.getLac());
                 json.put("psc", location.getPsc());
@@ -340,7 +333,6 @@ public final class JSONHelper {
         try {
             json.put("provider", SATELLITE_PROVIDER);
             json.put("timestamp", calendar.getTimeInMillis());
-            json.put("error", "null");
 
             if(gpsStatus.getSatellites() != null) {
                 int count = 0;
