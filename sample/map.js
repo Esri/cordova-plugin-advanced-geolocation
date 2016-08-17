@@ -89,7 +89,12 @@ var app = {
                 var satellites = "<br /><span style='font-weight:bold;'>Satellite Data:</span> " + date.toUTCString() + "<br /><br />";
 
                 for( var key in json){
-                    if(json.hasOwnProperty(key) && key.toLowerCase() != "provider" && key.toLowerCase() != "timestamp"){
+
+                    if(json.hasOwnProperty(key)
+                        && key.toLowerCase() != "provider"
+                        && key.toLowerCase() != "timestamp"
+                        && key.toLowerCase() != "error"){
+
                         satellites +=
                             "PRN: " + json[key].PRN +
                             ", fix: " + json[key].usedInFix +
@@ -99,15 +104,6 @@ var app = {
                 }
 
                 satDiv.innerHTML = satellites;
-            }
-
-            function addLocationData(lat, lon, provider){
-                locationDiv.innerHTML =
-                    lat
-                    + ", "
-                    + lon
-                    + ": "
-                    + provider;
             }
 
             // Initialize the geolocation plugin
@@ -132,7 +128,9 @@ var app = {
                             switch(jsonObject.provider){
                                 case "gps":
                                     if(jsonObject.latitude != "0.0"){
-                                        var point = new Point(jsonObject.longitude, jsonObject.latitude, "GPS");
+                                        console.log("GPS location detected - lat:" +
+                                            jsonObject.latitude + ", lon: " + jsonObject.longitude);
+                                        var point = new Point(jsonObject.longitude, jsonObject.latitude);
                                         map.centerAt(point);
                                         addGraphic( greenGPSSymbol, point);
                                     }
@@ -140,10 +138,11 @@ var app = {
 
                                 case "network":
                                     if(jsonObject.latitude != "0.0"){
+                                        console.log("Network location detected - lat:" +
+                                            jsonObject.latitude + ", lon: " + jsonObject.longitude);
                                         var point = new Point(jsonObject.longitude, jsonObject.latitude);
                                         map.centerAt(point);
                                         addGraphic( blueNetworkSymbol, point);
-                                        addLocationData(jsonObject.longitude, jsonObject.latitude, "NETWORK");
                                     }
                                     break;
 
@@ -168,9 +167,9 @@ var app = {
                     }
                 },
                 function(error){
-                    console.log("ERROR! " + JSON.stringify(error));
+                    console.log("Error JSON: " + JSON.stringify(error));
                     var e = JSON.parse(error);
-                    console.log("Error: " + e.msg);
+                    console.log("Error no.: " + e.error + ", Message: " + e.msg + ", Provider: " + e.provider);
                 },
                 /////////////////////////////////////////
                 //
