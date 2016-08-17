@@ -30,7 +30,7 @@ public class GPSAlertDialogFragment extends DialogFragment {
 	public Dialog onCreateDialog(Bundle savedInstanceState){
 		
 		final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setMessage("GPS is not currently enabled. Click ok to proceed to Location Settings.")
+		builder.setMessage("GPS is not currently enabled. Click ok to proceed to Location Settings then restart app.")
 			.setTitle("Toggle GPS");
 		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 	           public void onClick(DialogInterface dialog, int id) {

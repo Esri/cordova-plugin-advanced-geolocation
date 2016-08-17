@@ -17,8 +17,8 @@
 package com.esri.cordova.geolocation.controllers;
 
 
-import android.location.GpsStatus;
 import android.content.Context;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -30,6 +30,7 @@ import android.util.Log;
 import com.esri.cordova.geolocation.model.Coordinate;
 import com.esri.cordova.geolocation.model.InitStatus;
 import com.esri.cordova.geolocation.model.LocationDataBuffer;
+import com.esri.cordova.geolocation.utils.ErrorMessages;
 import com.esri.cordova.geolocation.utils.JSONHelper;
 
 import org.apache.cordova.CallbackContext;
@@ -54,7 +55,6 @@ public final class GPSController implements Runnable {
     private static LocationDataBuffer _locationDataBuffer = null;
 
     private static final String TAG = "GeolocationPlugin";
-    public static final String GPS_PROVIDER = "gps";
 
     public GPSController(
             CordovaInterface cordova,
@@ -92,12 +92,17 @@ public final class GPSController implements Runnable {
     public void startLocation(){
 
         if(!Thread.currentThread().isInterrupted()){
+            Log.i(TAG,"Available location providers: " + _locationManager.getAllProviders().toString());
 
             Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
                 public void uncaughtException(Thread thread, Throwable throwable) {
-                Log.d(TAG, "Failing gracefully after detecting an uncaught exception on GPSController thread. "
+                    Log.e(TAG, "Failing gracefully after detecting an uncaught exception on GPSController thread. "
                         + throwable.getMessage());
+
+                    sendCallback(PluginResult.Status.ERROR,
+                            JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, ErrorMessages.UNCAUGHT_THREAD_EXCEPTION()));
+                    stopLocation();
                 }
             });
 
@@ -105,21 +110,38 @@ public final class GPSController implements Runnable {
                 _locationDataBuffer = new LocationDataBuffer(_bufferSize);
             }
 
-            final InitStatus l2 = setLocationListenerGPSProvider();
-            InitStatus l3 = new InitStatus();
+            final InitStatus gpsListener = setLocationListenerGPSProvider();
+            InitStatus satelliteListener = new InitStatus();
 
             if(_returnSatelliteData){
-               l3 = setGPSStatusListener();
+               satelliteListener = setGPSStatusListener();
             }
 
-            if(!l2.success || !l3.success){
-                sendCallback(PluginResult.Status.ERROR,
-                        JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, l2.exception + ", " + l3.exception));
+            if(!gpsListener.success || !satelliteListener.success){
+                if(gpsListener.exception == null){
+                    // Handle custom error messages
+                    sendCallback(PluginResult.Status.ERROR,
+                            JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, gpsListener.error));
+                }
+                else {
+                    // Handle system exceptions
+                    sendCallback(PluginResult.Status.ERROR,
+                            JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, gpsListener.exception));
+                }
             }
             else {
                 // Return cache immediate if requested, otherwise wait for a location provider
                 if(_returnCache){
-                    final Location location = _locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+                    Location location = null;
+
+                    try {
+                        location = _locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    }
+                    catch(SecurityException exc){
+                        Log.e(TAG, exc.getMessage());
+                    }
+
                     final String parsedLocation;
 
                     // If the provider is disabled or currently unavailable then null is returned
@@ -143,14 +165,23 @@ public final class GPSController implements Runnable {
     public void stopLocation(){
 
         if(_locationManager != null){
-            if(_locationListenerGPSProvider != null){
-                _locationManager.removeUpdates(_locationListenerGPSProvider);
-                _locationListenerGPSProvider = null;
-            }
+            Log.d(TAG, "Attempting to stop gps geolocation");
 
             if(_gpsStatusListener != null){
                 _locationManager.removeGpsStatusListener(_gpsStatusListener);
                 _gpsStatusListener = null;
+            }
+
+            if(_locationListenerGPSProvider != null){
+
+                try {
+                    _locationManager.removeUpdates(_locationListenerGPSProvider);
+                }
+                catch(SecurityException exc){
+                    Log.e(TAG, exc.getMessage());
+                }
+
+                _locationListenerGPSProvider = null;
             }
 
             _locationManager = null;
@@ -162,8 +193,9 @@ public final class GPSController implements Runnable {
 
             Thread.currentThread().interrupt();
         }
-
-        Log.d(TAG, "Stopping gps geolocation");
+        else{
+            Log.d(TAG, "GPS location already stopped");
+        }
     }
 
     /**
@@ -195,7 +227,6 @@ public final class GPSController implements Runnable {
 
         final InitStatus status = new InitStatus();
 
-        _locationManager = (LocationManager) _cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);
         final Boolean gpsProviderEnabled = _locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
         if(gpsProviderEnabled){
@@ -211,7 +242,7 @@ public final class GPSController implements Runnable {
         else {
             //GPS not enabled
             status.success = false;
-            status.exception = "GPS provider not enabled";
+            status.error = ErrorMessages.GPS_UNAVAILABLE();
         }
 
         return status;
@@ -254,18 +285,19 @@ public final class GPSController implements Runnable {
             public void onStatusChanged(String provider, int status, Bundle extras) {
                 switch (status) {
                     case LocationProvider.OUT_OF_SERVICE:
-                        Log.d(TAG, "Location Status Changed: GPS Out of Service");
+                        // Reference: https://developer.android.com/reference/android/location/LocationProvider.html#OUT_OF_SERVICE
+                        Log.d(TAG, "Location Status Changed: " + ErrorMessages.GPS_OUT_OF_SERVICE().message);
                         sendCallback(PluginResult.Status.ERROR,
-                                JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, "GPS out of service"));
+                                JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, ErrorMessages.GPS_OUT_OF_SERVICE()));
 
                         break;
                     case LocationProvider.TEMPORARILY_UNAVAILABLE:
-                        Log.d(TAG, "Location Status Changed: GPS Temporarily Unavailable");
+                        Log.d(TAG, "Location Status Changed: " + ErrorMessages.GPS_UNAVAILABLE().message);
                         sendCallback(PluginResult.Status.ERROR,
-                                JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, "GPS temporarily unavailable"));
+                                JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, ErrorMessages.GPS_UNAVAILABLE()));
                         break;
                     case LocationProvider.AVAILABLE:
-                        Log.d(TAG, "Status Changed: GPS Available");
+                        Log.d(TAG, "Location Status Changed: GPS Available");
                         break;
                 }
             }
@@ -290,16 +322,17 @@ public final class GPSController implements Runnable {
                 _locationManager.requestLocationUpdates(
                         LocationManager.GPS_PROVIDER, _minTime, _minDistance, _locationListenerGPSProvider);
             }
-            catch(Exception exc){
-                Log.d(TAG, "Unable to start GPS provider. " + exc.getMessage());
+            catch(SecurityException exc){
+                Log.e(TAG, "Unable to start GPS provider. " + exc.getMessage());
                 status.success = false;
                 status.exception = exc.getMessage();
             }
         }
         else {
+            Log.w(TAG, ErrorMessages.GPS_UNAVAILABLE().message);
             //GPS not enabled
             status.success = false;
-            status.exception = "GPS provider not enabled";
+            status.error = ErrorMessages.GPS_UNAVAILABLE();
         }
 
         return status;

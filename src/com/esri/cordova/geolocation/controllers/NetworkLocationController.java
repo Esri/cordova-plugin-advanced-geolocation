@@ -28,6 +28,7 @@ import android.util.Log;
 import com.esri.cordova.geolocation.model.Coordinate;
 import com.esri.cordova.geolocation.model.InitStatus;
 import com.esri.cordova.geolocation.model.LocationDataBuffer;
+import com.esri.cordova.geolocation.utils.ErrorMessages;
 import com.esri.cordova.geolocation.utils.JSONHelper;
 
 import org.apache.cordova.CallbackContext;
@@ -50,7 +51,6 @@ public final class NetworkLocationController implements Runnable {
     private static LocationDataBuffer _locationDataBuffer = null;
 
     private static final String TAG = "GeolocationPlugin";
-    public static final String SATELLITE_PROVIDER = "satellite";
 
     public NetworkLocationController(
             CordovaInterface cordova,
@@ -90,7 +90,12 @@ public final class NetworkLocationController implements Runnable {
             Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
                 public void uncaughtException(Thread thread, Throwable throwable) {
-                    Log.d(TAG, "Failing gracefully after detecting an uncaught exception on NetworkLocationController thread.");
+                Log.e(TAG, "Failing gracefully after detecting an uncaught exception on NetworkLocationController thread."
+                        + throwable.getMessage());
+                sendCallback(PluginResult.Status.ERROR,
+                    JSONHelper.errorJSON(LocationManager.NETWORK_PROVIDER, ErrorMessages.UNCAUGHT_THREAD_EXCEPTION()));
+
+                stopLocation();
                 }
             });
 
@@ -98,22 +103,41 @@ public final class NetworkLocationController implements Runnable {
                 _locationDataBuffer = new LocationDataBuffer(_bufferSize);
             }
 
-            final InitStatus l2 = setLocationListenerNetworkProvider();
+            final InitStatus networkListener = setLocationListenerNetworkProvider();
 
-            if(!l2.success){
-                sendCallback(PluginResult.Status.ERROR,
-                        JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, l2.exception));
+            if(!networkListener.success){
+//                sendCallback(PluginResult.Status.ERROR,
+//                        JSONHelper.errorJSON(LocationManager.NETWORK_PROVIDER, networkListener.exception));
+
+                if(networkListener.exception == null){
+                    // Handle custom error messages
+                    sendCallback(PluginResult.Status.ERROR,
+                            JSONHelper.errorJSON(LocationManager.NETWORK_PROVIDER, networkListener.error));
+                }
+                else if(networkListener.error == null){
+                    // Handle system exceptions
+                    sendCallback(PluginResult.Status.ERROR,
+                            JSONHelper.errorJSON(LocationManager.NETWORK_PROVIDER, networkListener.exception));
+                }
             }
             else {
 
                 // Return cache immediate if requested, otherwise wait for a location provider
                 if(_returnCache){
-                    final Location location = _locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                    final String parsedLocation;
+
+                    Location location = null;
+
+                    try {
+                        location = _locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                    }
+                    catch(SecurityException exc){
+                        Log.e(TAG, exc.getMessage());
+                        sendCallback(PluginResult.Status.ERROR, exc.getMessage());
+                    }
 
                     // If the provider is disabled or currently unavailable then null may be returned on some devices
                     if(location != null) {
-                        parsedLocation = JSONHelper.locationJSON(LocationManager.NETWORK_PROVIDER, location, true);
+                        final String parsedLocation = JSONHelper.locationJSON(LocationManager.NETWORK_PROVIDER, location, true);
                         sendCallback(PluginResult.Status.OK, parsedLocation);
                     }
                 }
@@ -128,7 +152,15 @@ public final class NetworkLocationController implements Runnable {
 
         if(_locationManager != null){
             if(_locationListenerNetworkProvider != null){
-                _locationManager.removeUpdates(_locationListenerNetworkProvider);
+
+                try {
+                    _locationManager.removeUpdates(_locationListenerNetworkProvider);
+                }
+
+                catch(SecurityException exc){
+                    Log.e(TAG, exc.getMessage());
+                }
+
                 _locationListenerNetworkProvider = null;
             }
 
@@ -191,14 +223,14 @@ public final class NetworkLocationController implements Runnable {
             public void onStatusChanged(String provider, int status, Bundle extras) {
                 switch (status) {
                     case LocationProvider.OUT_OF_SERVICE:
-                        Log.d(TAG, "Location Status Changed: Network Provider Out of Service");
+                        Log.d(TAG, "Location Status Changed: " + ErrorMessages.NETWORK_PROVIDER_OUT_OF_SERVICE().message);
                         sendCallback(PluginResult.Status.ERROR,
-                                JSONHelper.errorJSON(LocationManager.NETWORK_PROVIDER, "Network provider out of service"));
+                                JSONHelper.errorJSON(LocationManager.NETWORK_PROVIDER, ErrorMessages.NETWORK_PROVIDER_OUT_OF_SERVICE()));
                         break;
                     case LocationProvider.TEMPORARILY_UNAVAILABLE:
-                        Log.d(TAG, "Location Status Changed: Network Provider Temporarily Unavailable");
+                        Log.d(TAG, "Location Status Changed: " + ErrorMessages.NETWORK_PROVIDER_UNAVAILABLE().message);
                         sendCallback(PluginResult.Status.ERROR,
-                                JSONHelper.errorJSON(LocationManager.NETWORK_PROVIDER, "Network provider temporarily unavailable"));
+                                JSONHelper.errorJSON(LocationManager.NETWORK_PROVIDER, ErrorMessages.NETWORK_PROVIDER_UNAVAILABLE()));
                         break;
                     case LocationProvider.AVAILABLE:
                         Log.d(TAG, "Location Status Changed: Network Provider Available");
@@ -225,14 +257,16 @@ public final class NetworkLocationController implements Runnable {
                 _locationManager.requestLocationUpdates(
                         LocationManager.NETWORK_PROVIDER, _minTime, _minDistance, _locationListenerNetworkProvider);
 
-            } catch (Exception exc) {
-                Log.d(TAG, "Unable to start network provider. " + exc.getMessage());
+            } catch (SecurityException exc) {
+                Log.e(TAG, "Unable to start network provider. " + exc.getMessage());
                 status.success = false;
                 status.exception = exc.getMessage();
             }
         }
         else {
+            Log.w(TAG, ErrorMessages.NETWORK_PROVIDER_UNAVAILABLE().message);
             status.success = false;
+            status.error = ErrorMessages.NETWORK_PROVIDER_UNAVAILABLE();
         }
 
         return status;

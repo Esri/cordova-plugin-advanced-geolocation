@@ -21,32 +21,52 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 
-public class NetworkUnavailableDialogFragment extends DialogFragment {
+public class GPSPermsDeniedDialogFragment extends DialogFragment{
+
+    private static final String TAG = "GeolocationPlugin";
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState){
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage("Internet is not available. Check if alternative network is available. Click ok to proceed to Settings then restart app.")
-                .setTitle("Toggle Wireless Settings");
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        final String message = "Without this permission the app will not retrieve location data. "
+                + "Are you sure you want to deny this permission?";
+        builder.setMessage(message)
+                .setTitle("Permission Denied");
+        builder.setPositiveButton("RE-TRY", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                Intent settingsIntent = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
-                getActivity().startActivity(settingsIntent);
+
+                try{
+                    Intent settingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
+                    settingsIntent.setData(uri);
+                    getActivity().startActivity(settingsIntent);
+                }
+                catch (Exception exc){
+                    Log.e(TAG, exc.getMessage());
+                }
             }
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("I'M SURE", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                NetworkUnavailableDialogFragment.this.getDialog().cancel();
+                GPSPermsDeniedDialogFragment.this.getDialog().cancel();
             }
         });
 
         final AlertDialog dialog = builder.create();
 
         return dialog;
-
     }
+
+
+    @Override
+    public void onDetach(){
+        super.onDetach();
+    }
+
 }

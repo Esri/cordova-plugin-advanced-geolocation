@@ -1,5 +1,19 @@
 # cordova-plugin-advanced-geolocation - Changelog
 
+## Version 1.0.0 - August 17, 2016
+
+Has breaking changes. This is a v1 implementation so any improvements and suggestions are welcome!
+
+**Enhancements**
+* Handles Android 6 permissions with native system prompts. Continues to handle previous Android versions exactly the same as before. 
+* Improved incompatible version protection. If using this library on an unsupported platform it should protect against incompatibility errors where functionality is not available on a specific Android version. If you come across something that fails please open an issue.
+* Significantly improved error handling. Errors are now reported as JSON Objects that include an error number and message. Errors messages are now pervasively collected where possible.
+* Improved sample app and fixed various bugs. 
+
+**Known Issues**
+* Does not provide a rationale message explaining why the library requires location information. There is a GPSPermsDeniedDialogFragment in the project and other stubs reserved for either custom implementation or as inclusion for future functionality.
+
+
 ## Version 0.5.1 - July 13, 2016
 
 No breaking changes.

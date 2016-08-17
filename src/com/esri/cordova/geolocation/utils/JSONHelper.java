@@ -19,6 +19,7 @@ package com.esri.cordova.geolocation.utils;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
 import android.location.Location;
+import android.os.Build;
 import android.telephony.CellIdentityCdma;
 import android.telephony.CellIdentityGsm;
 import android.telephony.CellIdentityLte;
@@ -30,6 +31,8 @@ import android.telephony.CellInfoWcdma;
 import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
+
+import com.esri.cordova.geolocation.model.Error;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -75,7 +78,7 @@ public final class JSONHelper {
                 json.put("cached", cached);
             }
             catch (JSONException exc) {
-                Log.d(TAG, exc.getMessage());
+                logJSONException(exc);
             }
         }
 
@@ -110,13 +113,13 @@ public final class JSONHelper {
             try {
 
                 json.put("provider", provider);
+                json.put("timestamp", location.getTime());
                 json.put("latitude", location.getLatitude());
                 json.put("longitude", location.getLongitude());
                 json.put("altitude", location.getAltitude());
                 json.put("accuracy", location.getAccuracy());
                 json.put("bearing", location.getBearing());
                 json.put("speed", location.getSpeed());
-                json.put("timestamp", location.getTime());
                 json.put("cached", cached);
                 json.put("buffer", buffer);
                 json.put("bufferSize", bufferSize);
@@ -125,7 +128,7 @@ public final class JSONHelper {
                 json.put("bufferedAccuracy", bufferedAccuracy);
             }
             catch (JSONException exc) {
-                Log.d(TAG, exc.getMessage());
+                logJSONException(exc);
             }
         }
 
@@ -134,7 +137,7 @@ public final class JSONHelper {
 
     /**
      * Converts CellInfoCdma into JSON
-     * @param cellInfo
+     * @param cellInfo CellInfoCdma
      * @return JSON
      */
     public static String cellInfoCDMAJSON(CellInfoCdma cellInfo){
@@ -142,13 +145,13 @@ public final class JSONHelper {
         final Calendar calendar = Calendar.getInstance();
         final JSONObject json = new JSONObject();
 
-        if(cellInfo != null){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && cellInfo != null) {
             try {
                 json.put("provider", CELLINFO_PROVIDER);
                 json.put("type", CDMA);
                 json.put("timestamp", calendar.getTimeInMillis());
 
-                CellIdentityCdma identityCdma = cellInfo.getCellIdentity();
+                final CellIdentityCdma identityCdma = cellInfo.getCellIdentity();
 
                 json.put("latitude", CdmaCellLocation.convertQuartSecToDecDegrees(identityCdma.getLatitude()));
                 json.put("longitude", CdmaCellLocation.convertQuartSecToDecDegrees(identityCdma.getLongitude()));
@@ -157,9 +160,10 @@ public final class JSONHelper {
                 json.put("systemId", identityCdma.getSystemId());
             }
             catch(JSONException exc) {
-                Log.d(TAG, exc.getMessage());
+                logJSONException(exc);
             }
         }
+
         return json.toString();
     }
 
@@ -168,7 +172,7 @@ public final class JSONHelper {
      * Some devices may not work correctly:
      * - Reference 1: https://code.google.com/p/android/issues/detail?id=191492
      * - Reference 2: http://stackoverflow.com/questions/17815062/cellidentitygsm-on-android
-     * @param cellInfo
+     * @param cellInfo CellInfoWcdma
      * @return JSON
      */
     public static String cellInfoWCDMAJSON(CellInfoWcdma cellInfo){
@@ -176,13 +180,13 @@ public final class JSONHelper {
         final Calendar calendar = Calendar.getInstance();
         final JSONObject json = new JSONObject();
 
-        if(cellInfo != null){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && cellInfo != null) {
             try {
                 json.put("provider", CELLINFO_PROVIDER);
                 json.put("type", WCDMA);
                 json.put("timestamp", calendar.getTimeInMillis());
 
-                CellIdentityWcdma identityWcdma = cellInfo.getCellIdentity();
+                final CellIdentityWcdma identityWcdma = cellInfo.getCellIdentity();
 
                 json.put("cid", identityWcdma.getCid());
                 json.put("lac", identityWcdma.getLac());
@@ -191,7 +195,7 @@ public final class JSONHelper {
                 json.put("psc", identityWcdma.getPsc());
             }
             catch(JSONException exc) {
-                Log.d(TAG, exc.getMessage());
+                logJSONException(exc);
             }
         }
         return json.toString();
@@ -199,7 +203,7 @@ public final class JSONHelper {
 
     /**
      * Converts CellInfoGsm into JSON
-     * @param cellInfo
+     * @param cellInfo CellInfoGsm
      * @return JSON
      */
     public static String cellInfoGSMJSON(CellInfoGsm cellInfo){
@@ -207,13 +211,13 @@ public final class JSONHelper {
         final Calendar calendar = Calendar.getInstance();
         final JSONObject json = new JSONObject();
 
-        if(cellInfo != null){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && cellInfo != null) {
             try {
                 json.put("provider", CELLINFO_PROVIDER);
                 json.put("type", GSM);
                 json.put("timestamp", calendar.getTimeInMillis());
 
-                CellIdentityGsm identityGsm = cellInfo.getCellIdentity();
+                final CellIdentityGsm identityGsm = cellInfo.getCellIdentity();
 
                 json.put("cid", identityGsm.getCid());
                 json.put("lac", identityGsm.getLac());
@@ -221,7 +225,7 @@ public final class JSONHelper {
                 json.put("mnc", identityGsm.getMnc());
             }
             catch(JSONException exc) {
-                Log.d(TAG, exc.getMessage());
+                logJSONException(exc);
             }
         }
         return json.toString();
@@ -229,7 +233,7 @@ public final class JSONHelper {
 
     /**
      * Converts CellInfoLte into JSON
-     * @param cellInfo
+     * @param cellInfo CellInfoLte
      * @return JSON
      */
     public static String cellInfoLTEJSON(CellInfoLte cellInfo){
@@ -237,7 +241,7 @@ public final class JSONHelper {
         final Calendar calendar = Calendar.getInstance();
         final JSONObject json = new JSONObject();
 
-        if(cellInfo != null){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && cellInfo != null) {
             try {
                 json.put("provider", CELLINFO_PROVIDER);
                 json.put("type", LTE);
@@ -252,7 +256,7 @@ public final class JSONHelper {
                 json.put("tac", identityLte.getTac());
             }
             catch(JSONException exc) {
-                Log.d(TAG, exc.getMessage());
+                logJSONException(exc);
             }
         }
         return json.toString();
@@ -261,7 +265,7 @@ public final class JSONHelper {
     /**
      * Parses data from PhoneStateListener.LISTEN_CELL_LOCATION.onCellLocationChanged
      * http://developer.android.com/reference/android/telephony/cdma/CdmaCellLocation.html
-     * @param location
+     * @param location CdmaCellLocation
      * @return JSON
      */
     public static String cdmaCellLocationJSON(CdmaCellLocation location){
@@ -269,7 +273,7 @@ public final class JSONHelper {
         final Calendar calendar = Calendar.getInstance();
         final JSONObject json = new JSONObject();
 
-        if(location != null){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && location != null) {
             try {
                 json.put("provider", CELLLOCATION_PROVIDER);
                 json.put("type", CDMA);
@@ -281,7 +285,7 @@ public final class JSONHelper {
                 json.put("baseStationLongitude", CdmaCellLocation.convertQuartSecToDecDegrees(location.getBaseStationLongitude()));
             }
             catch(JSONException exc) {
-                Log.d(TAG, exc.getMessage());
+                logJSONException(exc);
             }
         }
 
@@ -291,7 +295,7 @@ public final class JSONHelper {
     /**
      * Parses data from PhoneStateListener.LISTEN_CELL_LOCATION.onCellLocationChanged
      * http://developer.android.com/reference/android/telephony/cdma/CdmaCellLocation.html
-     * @param location
+     * @param location GsmCellLocation
      * @return JSON
      */
     public static String gsmCellLocationJSON(GsmCellLocation location){
@@ -309,7 +313,7 @@ public final class JSONHelper {
                 json.put("psc", location.getPsc());
             }
             catch(JSONException exc) {
-                Log.d(TAG, exc.getMessage());
+                logJSONException(exc);
             }
         }
 
@@ -353,7 +357,7 @@ public final class JSONHelper {
             }
         }
         catch (JSONException exc){
-            Log.d(TAG, exc.getMessage());
+            logJSONException(exc);
         }
 
         return json.toString();
@@ -374,9 +378,35 @@ public final class JSONHelper {
             json.put("error", error);
         }
         catch (JSONException exc) {
-            Log.d(TAG, exc.getMessage());
+            logJSONException(exc);
         }
 
         return json.toString();
+    }
+
+    /**
+     * Helper method for reporting errors coming off a location provider
+     * @param provider Indicates if this error is coming from gps or network provider
+     * @param error The actual error being thrown by the provider
+     * @return Error string
+     */
+    public static String errorJSON(String provider, Error error) {
+
+        final JSONObject json = new JSONObject();
+
+        try {
+            json.put("provider", provider);
+            json.put("error", error.number);
+            json.put("msg", error.message);
+        }
+        catch (JSONException exc) {
+            logJSONException(exc);
+        }
+
+        return json.toString();
+    }
+
+    private static void logJSONException(JSONException exc){
+        Log.d(TAG, ErrorMessages.JSON_EXCEPTION + ", " + exc.getMessage());
     }
 }

@@ -17,11 +17,7 @@
 package com.esri.cordova.geolocation.model;
 
 
-public class InitStatus {
-    public boolean success = true;
-    public String exception = null;
-    public Error error = null;
-
-    public InitStatus(){
-    }
+public class Error {
+    public String number;
+    public String message;
 }
