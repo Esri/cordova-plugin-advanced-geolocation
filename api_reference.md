@@ -147,6 +147,7 @@ A full set of detailed information is available via the [`android.telephony`](ht
 * There are minimum device SDK requirements. API level 18 is the current minimum to take advantage of this specific functionality. The plugin will turn off this functionality if the API level is less than 18. 
 * Activating cellular data may result in additional network charges for the user.
 * This information is not gauranteed.
+* This information may still be provided by the device even if Location is turned off.
 * The `TelephonyManager` API may not work correctly on all devices. 
 * To make use of this data you'll need access to a cell tower database. We don't provide cell tower location data, however there are databases and services available. One example provider is the [OpenCellId organization](http://wiki.opencellid.org/wiki/View_the_data). 
 * Take extra steps to protect the input data when using this API. Check for `null` or `Integer.MAX_VALUE`.
