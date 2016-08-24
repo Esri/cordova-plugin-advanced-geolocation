@@ -1,5 +1,13 @@
 # cordova-plugin-advanced-geolocation - Changelog
 
+## Version 1.1.0 - August 24, 2016
+
+No breaking changes.
+
+**Bug Fixes**
+* Closes #22 - Fix accidental thread interrupt clearing
+
+
 ## Version 1.0.0 - August 17, 2016
 
 Has breaking changes. This is a v1 implementation so any improvements and suggestions are welcome!
