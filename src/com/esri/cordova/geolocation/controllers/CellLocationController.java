@@ -231,7 +231,7 @@ public final class CellLocationController implements Runnable{
     }
 
     private static void sendCallback(PluginResult.Status status, String message){
-        if(!Thread.interrupted()){
+        if(!Thread.currentThread().isInterrupted()){
             final PluginResult result = new PluginResult(status, message);
             result.setKeepCallback(true);
             _callbackContext.sendPluginResult(result);

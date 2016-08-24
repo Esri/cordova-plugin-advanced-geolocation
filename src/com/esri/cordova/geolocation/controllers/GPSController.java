@@ -204,7 +204,7 @@ public final class GPSController implements Runnable {
      * @param message Any message
      */
     private static void sendCallback(PluginResult.Status status, String message){
-        if(!Thread.interrupted()){
+        if(!Thread.currentThread().isInterrupted()){
             final PluginResult result = new PluginResult(status, message);
             result.setKeepCallback(true);
             _callbackContext.sendPluginResult(result);
