@@ -1,10 +1,12 @@
 #cordova-plugin-advanced-geolocation (Android-only)
 
-Highly configurable native interface to [GPS](http://developer.android.com/reference/android/location/LocationManager.html#GPS_PROVIDER) and [NETWORK](http://developer.android.com/reference/android/location/LocationManager.html#NETWORK_PROVIDER) on-device [location providers](http://developer.android.com/reference/android/location/LocationProvider.html). It will return any location data registered by the on-device providers including real-time [satellite info](http://developer.android.com/reference/android/location/GpsSatellite.html).
+Highly configurable native interface to [GPS](http://developer.android.com/reference/android/location/LocationManager.html#GPS_PROVIDER) and [NETWORK](http://developer.android.com/reference/android/location/LocationManager.html#NETWORK_PROVIDER) on-device [location providers](http://developer.android.com/reference/android/location/LocationProvider.html). It will return and identify any location data registered by the on-device providers including real-time [satellite info](http://developer.android.com/reference/android/location/GpsSatellite.html).
 
 It also offers direct access to [CellInfo](http://developer.android.com/reference/android/telephony/CellInfo.html) and [CellLocation](http://developer.android.com/reference/android/telephony/CellLocation.html) data.
 
 In comparison to the W3C HTML Geolocation API, this plugin provides you with significantly greater control and more information to make better decisions with geolocation data.
+
+If you are experiencing annoying jumping around of your geolocation coordinates then this plugin will help. It seperates GPS from NETWORK coordinates and allows you smooth out the user experience.
 
 This plugin is available via [npm](https://www.npmjs.com/package/cordova-plugin-advanced-geolocation).
 
@@ -30,7 +32,7 @@ Here are the cliff notes for getting started. More details on the Cordova CLI ca
 
 `cordova plugin add https://github.com/esri/cordova-plugin-advanced-geolocation.git`
 
-In `config.xml` modify the following: ` <content src="sample-map.html" />`
+In `config.xml` modify the `src` to either ` <content src="sample-map.html" />` or `<content src="sample-leaflet-map.html" />`
 
 `cordova build`
 

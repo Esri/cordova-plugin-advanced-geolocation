@@ -37,6 +37,8 @@
         <!-- Copy over the assets files -->
         <asset src="sample/sample-map.html" target="sample-map.html" />
         <asset src="sample/map.js" target="js/map.js" />
+        <asset src="sample/sample-leaflet-map.html" target="sample-leaflet-map.html" />
+        <asset src="sample/leaflet-map.js" target="js/leaflet-map.js" />
         <asset src="sample/blue-pin.png" target="img/blue-pin.png" />
         <asset src="sample/green-pin.png" target="img/green-pin.png" />
 
