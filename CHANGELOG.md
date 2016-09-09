@@ -1,5 +1,12 @@
 # cordova-plugin-advanced-geolocation - Changelog
 
+## Version 1.1.1 - September 8, 2016
+
+No breaking changes.
+
+**Enhancements**
+* Added a Leaflet mapping sample.
+
 ## Version 1.1.0 - August 24, 2016
 
 No breaking changes.
