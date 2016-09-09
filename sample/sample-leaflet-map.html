@@ -1,0 +1,81 @@
+<html>
+<head>
+    <!--
+        Customize this policy to fit your own app's needs. For more guidance, see:
+        https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
+    -->
+    <meta http-equiv="Content-Security-Policy"
+          content="
+            default-src
+                'self'
+                'unsafe-inline'
+                https://cdn.jsdelivr.net;
+            font-src
+                'self'
+                'unsafe-inline'
+                data:;
+            img-src
+                'self'
+                http://*.arcgisonline.com
+                https://*.arcgisonline.com
+                https://cdn.jsdelivr.net
+                https://cdnjs.cloudflare.com
+                https://cdn.rawgit.com;
+            style-src
+                'self'
+                https://cdn.jsdelivr.net
+                'unsafe-inline';
+            script-src
+                'self'
+                http://*.arcgis.com
+                https://*.arcgis.com
+                https://cdn.jsdelivr.net
+                'unsafe-eval';">
+    <meta charset=utf-8 />
+    <title>Hello World Leaflet</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <!-- Load Leaflet from CDN-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/leaflet/1.0.0-rc.3/leaflet.css" />
+
+
+    <style>
+        <!--body { margin:0; padding:0; }-->
+        <!--#map { position: absolute; top:0; bottom:0; right:0; left:0; }-->
+
+        #map {
+            position: relative;
+            height: 75%;
+            width: 100%;
+            padding-bottom: 15px;
+        }
+        #locationData, #satData, #images {
+            position: relative;
+            padding-left: 15px;
+        }
+        body {
+            background-color: #FFF;
+            overflow: hidden;
+            font-family: "Trebuchet MS";
+        }
+
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <hr>
+    <div id='images'>
+        GPS&nbsp; <img src="img/green-pin.png">
+        &nbsp;NETWORK&nbsp; <img src="img/blue-pin.png">
+    </div>
+    <hr>
+    <div id='locationData'></div>
+    <div id="satData"></div>
+
+    <script src="https://cdn.jsdelivr.net/leaflet/1.0.0-rc.3/leaflet-src.js"></script>
+    <script src="https://cdn.jsdelivr.net/leaflet.esri/2.0.2/esri-leaflet.js"></script>
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="js/leaflet-map.js"></script>
+</body>
+</html>
