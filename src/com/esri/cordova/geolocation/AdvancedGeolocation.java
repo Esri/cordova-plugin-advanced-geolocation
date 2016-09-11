@@ -164,7 +164,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
         //
         // Reference for Permission Denied Workflow: https://material.google.com/patterns/permissions.html#permissions-denied-permissions
 
-        if(requestCode == REQUEST_LOCATION_PERMS_CODE){
+        if(requestCode == REQUEST_LOCATION_PERMS_CODE && grantResults.length > 1){
 
             // If permission was granted then go ahead
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
@@ -231,6 +231,11 @@ public class AdvancedGeolocation extends CordovaPlugin{
 
         // Misc. note: If you see the message "Attempted to send a second callback for ID:" then you need
         // to make sure to set pluginResult.setKeepCallback(true);
+
+        // We want to prevent multiple instances of controllers from running!
+        if(_gpsController != null || _networkLocationController != null || _cellLocationController != null){
+            stopLocation();
+        }
 
         final boolean networkEnabled = isInternetConnected(_cordovaActivity.getApplicationContext());
         ExecutorService threadPool = cordova.getThreadPool();

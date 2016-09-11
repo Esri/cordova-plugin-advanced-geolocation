@@ -101,7 +101,7 @@ public class ErrorMessages {
     public static Error UNCAUGHT_THREAD_EXCEPTION(){
         final Error err = new Error();
         err.number = "122";
-        err.message = "Uncaught thread exception. See logcat for full exception dump";
+        err.message = "Uncaught thread exception. The app may be partial and incorrectly operating. See logcat for full exception dump";
 
         return err;
     }
@@ -120,6 +120,14 @@ public class ErrorMessages {
         final Error err = new Error();
         err.number = "141";
         err.message = "Network location requested but it's out of service. Check your device";
+
+        return err;
+    }
+
+    public static Error FAILED_THREAD_INTERRUPT(){
+        final Error err = new Error();
+        err.number = "150";
+        err.message = "The plugin attempted a thread interrupt on a location providers thread and failed. See logcat for full exception dump";
 
         return err;
     }

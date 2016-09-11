@@ -1,5 +1,16 @@
 # cordova-plugin-advanced-geolocation - Changelog
 
+## Version 1.2 - September 11, 2016
+No breaking changes.
+
+**Enhancements**
+* This release focused on improving the robustness of the startup and shutdown processes.
+* The plugin now explicitly checks for a thread interrupt on all location providers before sending location updates. Previous versions lazily assume that the thread would be terminated. 
+
+**Bug Fixes**
+* Closes #26 - Android OS NullPointerException on initialization
+* Closes #28 - LocationManager error on shutdown
+
 ## Version 1.1.1 - September 8, 2016
 
 No breaking changes.

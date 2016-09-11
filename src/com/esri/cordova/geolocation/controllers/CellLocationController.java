@@ -124,6 +124,9 @@ public final class CellLocationController implements Runnable{
                     JSONHelper.errorJSON(CELLINFO_PROVIDER, ErrorMessages.CELL_DATA_NOT_AVAILABLE()));
             }
         }
+        else {
+            Log.e(TAG, "Not starting CellLocationController due to thread interrupt.");
+        }
     }
 
     /**
@@ -135,7 +138,16 @@ public final class CellLocationController implements Runnable{
             _telephonyManager.listen(_phoneStateListener, PhoneStateListener.LISTEN_NONE);
             _phoneStateListener = null;
             _telephonyManager = null;
-            Thread.currentThread().interrupt();
+
+            try {
+                Thread.currentThread().interrupt();
+            }
+            catch(SecurityException exc){
+                Log.e(TAG, exc.getMessage());
+                sendCallback(PluginResult.Status.ERROR,
+                        JSONHelper.errorJSON(CELLINFO_PROVIDER, ErrorMessages.FAILED_THREAD_INTERRUPT()));
+            }
+
             Log.d(TAG, "Stopping PhoneStateListener");
         }
     }
@@ -159,15 +171,18 @@ public final class CellLocationController implements Runnable{
         _phoneStateListener = new PhoneStateListener(){
             @Override
             public void onCellLocationChanged(CellLocation location){
-                if(location instanceof CdmaCellLocation){
-                    final CdmaCellLocation cellLocationCdma = (CdmaCellLocation) location;
-                    sendCallback(PluginResult.Status.OK,
-                            JSONHelper.cdmaCellLocationJSON(cellLocationCdma));
-                }
-                if(location instanceof GsmCellLocation){
-                    final GsmCellLocation cellLocationGsm = (GsmCellLocation) location;
-                    sendCallback(PluginResult.Status.OK,
-                            JSONHelper.gsmCellLocationJSON(cellLocationGsm));
+
+                if(!Thread.currentThread().isInterrupted()){
+                    if(location instanceof CdmaCellLocation){
+                        final CdmaCellLocation cellLocationCdma = (CdmaCellLocation) location;
+                        sendCallback(PluginResult.Status.OK,
+                                JSONHelper.cdmaCellLocationJSON(cellLocationCdma));
+                    }
+                    if(location instanceof GsmCellLocation){
+                        final GsmCellLocation cellLocationGsm = (GsmCellLocation) location;
+                        sendCallback(PluginResult.Status.OK,
+                                JSONHelper.gsmCellLocationJSON(cellLocationGsm));
+                    }
                 }
             }
         };

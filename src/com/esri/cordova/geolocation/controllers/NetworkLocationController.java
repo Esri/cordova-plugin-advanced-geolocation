@@ -106,8 +106,6 @@ public final class NetworkLocationController implements Runnable {
             final InitStatus networkListener = setLocationListenerNetworkProvider();
 
             if(!networkListener.success){
-//                sendCallback(PluginResult.Status.ERROR,
-//                        JSONHelper.errorJSON(LocationManager.NETWORK_PROVIDER, networkListener.exception));
 
                 if(networkListener.exception == null){
                     // Handle custom error messages
@@ -143,6 +141,9 @@ public final class NetworkLocationController implements Runnable {
                 }
             }
         }
+        else {
+            Log.e(TAG, "Not starting NetworkLocationController due to thread interrupt.");
+        }
     }
 
     /**
@@ -171,7 +172,14 @@ public final class NetworkLocationController implements Runnable {
                 _locationDataBuffer.clear();
             }
 
-            Thread.currentThread().interrupt();
+            try {
+                Thread.currentThread().interrupt();
+            }
+            catch(SecurityException exc){
+                Log.e(TAG, exc.getMessage());
+                sendCallback(PluginResult.Status.ERROR,
+                        JSONHelper.errorJSON(LocationManager.NETWORK_PROVIDER, ErrorMessages.FAILED_THREAD_INTERRUPT()));
+            }
         }
 
         Log.d(TAG, "Stopping network geolocation");
@@ -191,7 +199,7 @@ public final class NetworkLocationController implements Runnable {
 
             public void onLocationChanged(Location location) {
 
-                if(_buffer){
+                if(_buffer && !Thread.currentThread().isInterrupted()){
                     final Coordinate coordinate = new Coordinate();
                     coordinate.latitude = location.getLatitude();
                     coordinate.longitude = location.getLongitude();

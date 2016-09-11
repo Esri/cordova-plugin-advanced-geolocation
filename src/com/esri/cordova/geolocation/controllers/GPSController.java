@@ -155,7 +155,7 @@ public final class GPSController implements Runnable {
             }
         }
         else {
-            Log.d(TAG, "Not starting GPSController due to thread interrupt.");
+            Log.e(TAG, "Not starting GPSController due to thread interrupt.");
         }
     }
 
@@ -191,7 +191,14 @@ public final class GPSController implements Runnable {
                 _locationDataBuffer.clear();
             }
 
-            Thread.currentThread().interrupt();
+            try {
+                Thread.currentThread().interrupt();
+            }
+            catch(SecurityException exc){
+                Log.e(TAG, exc.getMessage());
+                sendCallback(PluginResult.Status.ERROR,
+                        JSONHelper.errorJSON(LocationManager.GPS_PROVIDER, ErrorMessages.FAILED_THREAD_INTERRUPT()));
+            }
         }
         else{
             Log.d(TAG, "GPS location already stopped");
@@ -220,8 +227,15 @@ public final class GPSController implements Runnable {
             @Override
             public void onGpsStatusChanged(int event) {
                 Log.d(TAG, "GPS status changed.");
-                sendCallback(PluginResult.Status.OK,
-                        JSONHelper.satelliteDataJSON(_locationManager.getGpsStatus(null)));
+
+                // Ignore if GPS_EVENT_STARTED or GPS_EVENT_STOPPED
+                if(!Thread.currentThread().isInterrupted() &&
+                        (event == GpsStatus.GPS_EVENT_FIRST_FIX ||
+                                event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) &&
+                                        _locationManager != null){
+                    sendCallback(PluginResult.Status.OK,
+                            JSONHelper.satelliteDataJSON(_locationManager.getGpsStatus(null)));
+                }
             }
         };
 
@@ -253,7 +267,7 @@ public final class GPSController implements Runnable {
         _locationListenerGPSProvider = new LocationListener() {
 
             public void onLocationChanged(Location location) {
-                if(_buffer){
+                if(_buffer && !Thread.currentThread().isInterrupted()){
                     final Coordinate coordinate = new Coordinate();
                     coordinate.latitude = location.getLatitude();
                     coordinate.longitude = location.getLongitude();
