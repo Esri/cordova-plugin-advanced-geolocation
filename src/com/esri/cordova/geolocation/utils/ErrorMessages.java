@@ -123,4 +123,12 @@ public class ErrorMessages {
 
         return err;
     }
+
+    public static Error FAILED_THREAD_INTERRUPT(){
+        final Error err = new Error();
+        err.number = "150";
+        err.message = "The plugin attempted a thread interrupt on a location providers thread and failed. See logcat for full exception dump";
+
+        return err;
+    }
 }
