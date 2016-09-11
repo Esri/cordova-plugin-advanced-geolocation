@@ -101,7 +101,7 @@ public class ErrorMessages {
     public static Error UNCAUGHT_THREAD_EXCEPTION(){
         final Error err = new Error();
         err.number = "122";
-        err.message = "Uncaught thread exception. See logcat for full exception dump";
+        err.message = "Uncaught thread exception. The app may be partial and incorrectly operating. See logcat for full exception dump";
 
         return err;
     }
