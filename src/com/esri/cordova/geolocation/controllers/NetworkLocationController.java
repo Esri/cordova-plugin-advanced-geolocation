@@ -106,8 +106,6 @@ public final class NetworkLocationController implements Runnable {
             final InitStatus networkListener = setLocationListenerNetworkProvider();
 
             if(!networkListener.success){
-//                sendCallback(PluginResult.Status.ERROR,
-//                        JSONHelper.errorJSON(LocationManager.NETWORK_PROVIDER, networkListener.exception));
 
                 if(networkListener.exception == null){
                     // Handle custom error messages
