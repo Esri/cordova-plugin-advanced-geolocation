@@ -185,6 +185,13 @@ public final class CellLocationController implements Runnable{
                     }
                 }
             }
+
+            @Override
+            public void onCellInfoChanged(List<CellInfo> cellInfo){
+                if(!Thread.currentThread().isInterrupted()){
+                    processCellInfos(cellInfo);
+                }
+            }
         };
 
         _telephonyManager.listen(_phoneStateListener, PhoneStateListener.LISTEN_CELL_LOCATION);
@@ -252,5 +259,4 @@ public final class CellLocationController implements Runnable{
             _callbackContext.sendPluginResult(result);
         }
     }
-
 }
