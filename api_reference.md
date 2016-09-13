@@ -23,12 +23,13 @@ Option | Type | Description
 --- | --- | ---
 `minTime` | integer | The minimum time interval between location updates in milliseconds. Smaller numbers increase battery usage.
 `minDistance` | integer | The minimum distance between location updates in meters. Smaller numbers increase battery usage.
-`noWarn` | boolean | Display native warning popup dialog if GPS or Network is disabled.
+`noWarn` | boolean | Display native warning popup dialog if GPS or Network is disabled. Only applies to Pre-M Android versions.
 `providers` | String | Acceptable values to specify location providers are: `"gps"`, `"network"`, `"cell"`, `"all"` or `"some"`. Network provider may return locations if WiFi or cellular internet is enabled.
 `useCache` | boolean | Will return cached values from any active location provider. While not gauranteed, both GPS and NETWORK providers have a cache.
 `satelliteData` | boolean | If `true` it returns all available satellite data from the GPS receiver. Requires that the `gps` provider is also enabled. <br><br>**CAUTION:** Activating satellite data will increase CPU and memory usage. 
 `buffer` | boolean | If `true` it will start a buffer that returns the averaged geometric center of GPS and/or NETWORK locations. Use this when requirements call for determining a single, best location. The buffer uses a FIFO ordering, so new values added and old values are removed. 
 `bufferSize` | integer | The maximum number of elements allowed within the buffer. It's strongly recommended to use as small of a buffer size as possible to minimize memory usage and garbage collection. Experiment to see what works best. This property will be ignored if `buffer` is set to `false`. Buffers larger than 30 elements may not be necessary.<br><br>**CAUTION:** Increasing the buffer size will increase CPU and memory usage. 
+`SignalStrength` | boolean | Whether or not to return cellular signal strength data.
 
 ## GPS and Network Data
 
@@ -56,7 +57,7 @@ Example:
 
 Property | Type |  Value | Description
 --- | --- | --- | ---
-`provider` | String | `"gps"` or `"network"` | Let's you determine where this data is coming from.
+`provider` | String | `"gps"` or `"network"` | Let's you determine where this data is coming from. Network can be cellular and/or WiFi.
 `latitude` | String | number | Latitude in degrees. `0.0` is a valid [WGS 84 location off the coast of Africa](https://en.wikipedia.org/wiki/Null_Island). 
 `longitude` | String | number | Longitude in degrees. `0.0` is a valid [WGS 84 location off the coast of Africa](https://en.wikipedia.org/wiki/Null_Island).
 `altitude` | String | number | Altitude if available, in meters above the WGS 84 reference ellipsoid. 
@@ -272,6 +273,174 @@ Property | Type |  Value | Description
 `cid` | integer | ? | GSM cell id, -1 if unknown, 0xffff max legal value.
 `lac` | integer | ? | GSM Location Area Code-1 if unknown, 0xffff max legal value.
 `psc` | integer | ? | UMTS Primary Scrambling Code, -1 if unknown or GSM.
+
+# Signal Strength Data
+
+Signal strength data will vary depending on your device and cellular providers. The data is derived from either a change in `SignalStrength` or a change in `CellInfo` data.
+
+
+## signalStrength
+
+This information is delivered when the functionality is available on a device, and only when the signal strength changes and the JavaScript application has specified the `signalStrength` option as `true`. Note, there can be many changes in signal strength per minute.
+
+More information can be derived from the Android SDK [source code](https://github.com/android/platform_frameworks_base/blob/master/telephony/java/android/telephony/SignalStrength.java).
+
+If you see any of the following in AndroidStudio debugger, they are default values and may indicate the device isn't reporting anything valid for those properties:         
+
+		// Default values
+		mGsmSignalStrength = 99;
+        mGsmBitErrorRate = -1;
+        mCdmaDbm = -1;
+        mCdmaEcio = -1;
+        mEvdoDbm = -1;
+        mEvdoEcio = -1;
+        mEvdoSnr = -1;
+        mLteSignalStrength = 99;
+
+        
+Example console.log:
+
+	// Contains invalid values
+	"cell_info JSON: 
+			{
+			"provider":"cell_info",
+			"type":"signal_strength",			
+			"timestamp":1473784636478,
+			"cdmaDbm":-120,
+			"cdmaEcio":-160,
+			"evdoDbm":-120,
+			"evdoEcio":-1,
+			"evdoSnr":-1,
+			"gsmBitErrorRate":0,
+			"gsmSignalStrength":11,
+			"level":3,
+			"isGSM":true
+			}"
+
+Property | Type |  Value | Description
+--- | --- | --- | ---
+`provider` | String | `cell_location` | Let's you determine where this data is coming from.
+`type` | String | `signal_strength` | Depends on the device, cell service provider and how many radios are active. It can return multiple values.
+`timestamp` | number | milliseconds | Time right now based on the Calendar whose locale is determined by system settings. Gregorian calendar assumes counting begins at the start of the epoch: i.e., YEAR = 1970, MONTH = JANUARY, DATE = 1, etc. For more info see [java.util.Calendar](http://developer.android.com/reference/java/util/Calendar.html).
+`cdmaDbm` | integer | ? | CDMA RSSI value in dBm.  
+`cdmaEcio` | integer | ? | CDMA Ec/Io value in dB*10.
+`evdoDbm` | integer | ? | EVDO RSSI value in dBm. 
+`evdoEcio` | integer | ? | EVDO Ec/Io value in dB*10.
+`evdoSnr` | integer | ? | Signal to noise ratio.
+`gsmBitErrorRate` | integer | 0-7, 99 | GSM bit error rate as defined in TS 27.007 8.5.
+`gsmSignalStrength` | integer | 0-31, 99 | GSM Signal Strength as defined in TS 27.007 8.5.
+`level` | integer | 0 - 4 | An abstract level value for the overall signal strength. <br><br>The integer value represents the general signal quality. This may take into account many different radio technology inputs. 0 represents very poor signal strength while 4 represents a very strong signal strength.
+
+## cellSignalStrengthCdma
+
+This information is provided when a change is detected in the `CellInfoCdma` data and the JavaScript application has specified the `signalStrength` option as `true`.
+
+More information can be derived from the Android SDK [source code](https://github.com/android/platform_frameworks_base/blob/master/telephony/java/android/telephony/CellSignalStrengthCdma.java).
+
+If you see any values in AndroidStudio debugger that represent `Integer.MAX_VALUE`, for example `mCdmaEcio = 2147483647`, then most likely the device isn't reporting anything valid for that property.
+
+Property | Type |  Value | Description
+--- | --- | --- | ---
+`asuLevel` | integer | 0 - 97, 99 | Signal level as an asu value. 99 means unknown.
+`cdmaDbm` | integer | ? | CDMA RSSI value in dBm. Value >= -75 is great, >= - 85 is good, >= - 95 is moderate, >= - 100 poor. A value of -120 may indicate your device isn't reporting a value. 
+`cdmaEcio` | integer | ? | CDMA Ec/Io value in dB*10. Value >= -90 is great, >= -110 is good, >= -130 is moderate, >= -150 is poor. A value of -160 may indicate your device isn't reporting a value. 
+`cdmaLevel` | integer | 0 - 4 | CDMA as a level. A rough comparision between cdmaDbm and cdmaEcio.
+`dbm` | integer | ? | Signal strength as dBm.
+`evdoDbm` | integer | ? | EVDO RSSI value in dBm. Value >= -65 is great, >= -75 is good, >= -90 is moderate, >= -105 is poor. A value of -120 may indicate your device isn't reporting a value.
+`evdoEcio` | integer | ? | EVDO Ec/Io value in dB*10.
+`evdoLevel` | integer | 0 - 4 |  A rough comparison between evdoDbm and evdoSnr.
+`evdoSnr` | integer | 0 - 8 | Valid values are 0-8. 8 is the highest signal to noise ratio.
+`level` | integer | 0 - 4 | Derived from a rough comparison between evdoLevel and cdmaLevel. 
+
+## cellSignalStrengthWcdma
+
+This information is provided when a change is detected in the `CellInfoWcdma` data and the JavaScript application has specified the `signalStrength` option as `true`.
+
+More information can be derived from the Android SDK [source code](https://github.com/android/platform_frameworks_base/blob/master/telephony/java/android/telephony/CellSignalStrengthWcdma.java).
+
+If you see any values in AndroidStudio debugger that represent `Integer.MAX_VALUE`, for example `dBm = 2147483647`, then most likely the device isn't reporting anything valid for that property.
+
+Example console.log:
+
+	// Contains invalid values
+	"cell_info JSON: 
+		{
+		"provider":"cell_info",
+		"type":"wcdma",
+		"timestamp":1473784633808,
+		"cid":2147483647,
+		"lac":2147483647,
+		"mcc":2147483647,
+		"mnc":2147483647,
+		"psc":150,
+		"signalStrength":
+			{
+			"asuLevel":5,
+			"dbm":-103,
+			"level":2
+			}
+		}"
+
+Example logcat:
+	
+	// Contains valid values
+	CellInfoWcdma:
+		{
+		mRegistered=YES 
+		mTimeStampType=oem_ril 
+		mTimeStamp=608501062167412ns 
+		CellIdentityWcdma:
+			{ 
+			mMcc=310
+			mMnc=410 
+			mLac=31251 
+			mCid=65535 
+			mPsc=100
+			} 
+		CellSignalStrengthWcdma: 
+			ss=10 
+			ber=99
+		}
+
+Property | Type |  Value | Description
+--- | --- | --- | ---
+`asuLevel` | integer | 0 - 31, 99 | Get the signal level as an asu value between 0..31, 99 is unknown. Asu is calculated based on 3GPP RSRP. If asu = 0 (-113dB or less) this represents a very weak signal.
+`dbm` | integer | ? | Signal strength as dBm.
+`level` | integer | 0 - 4 | A rough analysis of signal strength. Zero means none or unknown, one is poor, two is moderate, three is good, four is great.
+
+
+## cellSignalStrengthGsm
+
+This information is provided when a change is detected in the `CellInfoGsm` data and the JavaScript application has specified the `signalStrength` option as `true`.
+
+More information can be derived from the Android SDK [source code](https://github.com/android/platform_frameworks_base/blob/master/telephony/java/android/telephony/CellSignalStrengthGsm.java).
+
+If you see any values in AndroidStudio debugger that represent `Integer.MAX_VALUE`, for example `dBm = 2147483647`, then most likely the device isn't reporting anything valid for that property.
+
+Property | Type |  Value | Description
+--- | --- | --- | ---
+`asuLevel` | integer | 0 - 31, 99 | Get the signal level as an asu value between 0..31, 99 is unknown. Asu is calculated based on 3GPP RSRP. If asu = 0 (-113dB or less) this represents a very weak signal.
+`dbm` | integer | ? | Signal strength as dBm. Max value of `2147483647` indicates the device isn't reporting a level.  
+`level` | integer | 0 - 4 | A rough analysis of signal strength. Zero means none or unknown, one is poor, two is moderate, three is good, four is great.
+
+## cellSignalStrengthLte
+
+This information is provided when a change is detected in the `CellInfoLte` data and the JavaScript application has specified the `signalStrength` option as `true`.
+
+More information can be derived from the Android SDK [source code](https://github.com/android/platform_frameworks_base/blob/master/telephony/java/android/telephony/CellSignalStrengthLte.java).
+
+If you see any values in AndroidStudio debugger that represent `Integer.MAX_VALUE`, for example `mTimingAdvance = 2147483647`, then most likely the device isn't reporting anything valid for that property.
+
+Property | Type |  Value | Description
+--- | --- | --- | ---
+`asuLevel` | integer | 0 - 97, 99 | an asu value between 0..97, 99 is unknown. Asu is calculated based on 3GPP RSRP. 
+`dbm` | integer | ? | Signal strength as dBm. 
+`level` | integer | 0 - 4 | A rough analysis of signal strength. Zero means none or unknown, one is poor, two is moderate, three is good, four is great. A rough comparison between RSSNR (Reference Signal Signal to Noise Ratio) and RSRP (Reference Signal Received Power).
+`timingAdvance` | integer | | Derived directly from the phone, this represents a MAC Control Element (MAC CE) used to control the timing of the uplink signal transmission. Max value of `2147483647` indicates the device isn't reporting an valid value. 
+ 
+
+
+
 
 
 

@@ -48,13 +48,19 @@
         <source-file src="src/com/esri/cordova/geolocation/controllers/CellLocationController.java" target-dir="src/com/esri/cordova/geolocation/controllers" />
         <source-file src="src/com/esri/cordova/geolocation/controllers/GPSController.java" target-dir="src/com/esri/cordova/geolocation/controllers" />
         <source-file src="src/com/esri/cordova/geolocation/controllers/NetworkLocationController.java" target-dir="src/com/esri/cordova/geolocation/controllers" />
+        <source-file src="src/com/esri/cordova/geolocation/controllers/PermissionsController.java" target-dir="src/com/esri/cordova/geolocation/controllers" />
+
+        <source-file src="src/com/esri/cordova/geolocation/listeners/SignalStrengthListener.java" target-dir="src/com/esri/cordova/geolocation/listeners" />
 
         <source-file src="src/com/esri/cordova/geolocation/fragments/GPSAlertDialogFragment.java" target-dir="src/com/esri/cordova/geolocation/fragments" />
         <source-file src="src/com/esri/cordova/geolocation/fragments/NetworkUnavailableDialogFragment.java" target-dir="src/com/esri/cordova/geolocation/fragments" />
+        <source-file src="src/com/esri/cordova/geolocation/fragments/GPSPermsDeniedDialogFragment.java" target-dir="src/com/esri/cordova/geolocation/fragments" />
 
         <source-file src="src/com/esri/cordova/geolocation/model/InitStatus.java" target-dir="src/com/esri/cordova/geolocation/model" />
         <source-file src="src/com/esri/cordova/geolocation/model/Coordinate.java" target-dir="src/com/esri/cordova/geolocation/model" />
         <source-file src="src/com/esri/cordova/geolocation/model/LocationDataBuffer.java" target-dir="src/com/esri/cordova/geolocation/model" />
+        <source-file src="src/com/esri/cordova/geolocation/model/StrengthChange.java" target-dir="src/com/esri/cordova/geolocation/model" />
+        <source-file src="src/com/esri/cordova/geolocation/model/Error.java" target-dir="src/com/esri/cordova/geolocation/model" />        
         
         <source-file src="src/com/esri/cordova/geolocation/utils/JSONHelper.java" target-dir="src/com/esri/cordova/geolocation/utils" />
         <source-file src="src/com/esri/cordova/geolocation/utils/GeodataHelper.java" target-dir="src/com/esri/cordova/geolocation/utils" />

@@ -2,7 +2,7 @@
 
 Highly configurable native interface to [GPS](http://developer.android.com/reference/android/location/LocationManager.html#GPS_PROVIDER) and [NETWORK](http://developer.android.com/reference/android/location/LocationManager.html#NETWORK_PROVIDER) on-device [location providers](http://developer.android.com/reference/android/location/LocationProvider.html). It will return and identify any location data registered by the on-device providers including real-time [satellite info](http://developer.android.com/reference/android/location/GpsSatellite.html).
 
-It also offers direct access to [CellInfo](http://developer.android.com/reference/android/telephony/CellInfo.html) and [CellLocation](http://developer.android.com/reference/android/telephony/CellLocation.html) data.
+It also offers direct access to [CellInfo](http://developer.android.com/reference/android/telephony/CellInfo.html), [CellLocation](http://developer.android.com/reference/android/telephony/CellLocation.html) and [CellSignalStrength](https://developer.android.com/reference/android/telephony/CellSignalStrength.html) data.
 
 In comparison to the W3C HTML Geolocation API, this plugin provides you with significantly greater control and more information to make better decisions with geolocation data.
 
@@ -86,7 +86,11 @@ Click [here](api_reference.md) to read all about it.
                 	
                 case "cell_location":
                 	//TODO
-                	break;                	
+                	break;  
+                
+                case "signal_strength":
+                	//TODO
+                	break;              	
             }
         }
         catch(exc){
@@ -112,6 +116,7 @@ Click [here](api_reference.md) to read all about it.
         "satelliteData":false, // Return of GPS satellite info
         "buffer":false,        // Buffer location data
         "bufferSize":0         // Max elements in buffer
+        "signalStrength":false // Return cell signal strength data
     });
 
 
@@ -123,7 +128,7 @@ Here are example use cases for the different ways location providers can be set 
 
 * **`"gps"`** Activates only the GPS provider. Best accuracy where device has an unobstructed view of the sky.
 * **`"network"`** Activates only the Network provider. Best accuracy indoors and urban/downtown areas with tall buildings where device does not have an unobstructed view of the sky and cellular service is available and/or WiFi. 
-* **`"cell"`** Access only cell tower information. 
+* **`"cell"`** Access only cell network information. 
 * **`"all"`** Activates GPS, Network and Cellular providers. Allows you to take advantage of network providers to establish initial location and then use GPS to finalize a more accurate location. Typically the device will provide the network location first before the GPS warms up. After the GPS warms up, and if the accuracy is good enough for your requirements, then you would switch to using the GPS locations. The Cellular provider gives you access to cell tower location information.
 * **`"some"`** Activates only GPS and Network providers. Allows you to take advantage of network providers to establish initial location and then use GPS to finalize a more accurate location. Typically the device will provide the network location first before the GPS warms up. After the GPS warms up, and if the accuracy is good enough for your requirements, then you would switch to using the GPS locations.
 
@@ -137,11 +142,13 @@ The following geolocation data may be exposed and accessible by this API if the 
 * Real-time Network location triangulation
 * Cached Network location
 * Cell tower information (type of information varies by device, OS version and cell service provider)
+* Cellular network signal strength
 
 ## FAQ
 
 * **Which location providers does this plugin use?** The plugin can be configured to use both [GPS](http://developer.android.com/reference/android/location/LocationManager.html#GPS_PROVIDER) and [NETWORK](http://developer.android.com/reference/android/location/LocationManager.html#NETWORK_PROVIDER) location providers. NETWORK location providers require access to the internet whether it's via cellular or WiFi connection. The plugin does not use [PASSIVE](http://developer.android.com/reference/android/location/LocationManager.html#PASSIVE_PROVIDER) location providers because you have no direct control over those.
-* **What is the difference between `CellInfo` and `CellLocation` data?** It can be confusing because they have a lot of overlapping capabilities and may provide slightly different data, as well. They are both focused on providing cell tower information. `CellLocation` comes in two flavors and is only triggered during an [PhoneStateListener.LISTEN_CELL_LOCATION](http://developer.android.com/reference/android/telephony/PhoneStateListener.html#LISTEN_CELL_LOCATION) event: [CdmaCellLocation](http://developer.android.com/reference/android/telephony/cdma/CdmaCellLocation.html) and [GsmCellLocation](http://developer.android.com/reference/android/telephony/gsm/GsmCellLocation.html). `CellInfo` contains a sub-set of information focused on the cell tower's id and its signal strength and is derived by querying [TelephonyManager.getAllCellInfo()](http://developer.android.com/reference/android/telephony/TelephonyManager.html#getAllCellInfo()). The current version of this library does not return signal strength info. This comes in four flavors: [CellInfoCdma](http://developer.android.com/reference/android/telephony/CellInfoCdma.html), [CellInfoWcmda](http://developer.android.com/reference/android/telephony/CellInfoWcdma.html), [CellInfoGsm](http://developer.android.com/reference/android/telephony/CellInfoGsm.html) and [CellInfoLte](http://developer.android.com/reference/android/telephony/CellInfoLte.html). 
+* **What is the difference between `CellInfo` and `CellLocation` data?** It can be confusing because they have a lot of overlapping capabilities and may provide slightly different data, as well. They are both focused on providing cell tower information. `CellLocation` cis only triggered during an [PhoneStateListener.LISTEN_CELL_LOCATION](http://developer.android.com/reference/android/telephony/PhoneStateListener.html#LISTEN_CELL_LOCATION) event and has two types: [CdmaCellLocation](http://developer.android.com/reference/android/telephony/cdma/CdmaCellLocation.html) and [GsmCellLocation](http://developer.android.com/reference/android/telephony/gsm/GsmCellLocation.html). `CellInfo` contains a sub-set of information focused on the cell tower's id and its signal strength and is derived by querying [TelephonyManager.getAllCellInfo()](http://developer.android.com/reference/android/telephony/TelephonyManager.html#getAllCellInfo()). This comes in four flavors: [CellInfoCdma](http://developer.android.com/reference/android/telephony/CellInfoCdma.html), [CellInfoWcmda](http://developer.android.com/reference/android/telephony/CellInfoWcdma.html), [CellInfoGsm](http://developer.android.com/reference/android/telephony/CellInfoGsm.html) and [CellInfoLte](http://developer.android.com/reference/android/telephony/CellInfoLte.html). 
+* **How is cell signal strength information provided?** There are two ways that signal strength information is derived. The first way is when the signal strength changes and the second way is when `CellInfo` changes. There are differences in the data that is returned between [SignalStrength](https://developer.android.com/reference/android/telephony/SignalStrength.html) and [CellSignalStrength](https://developer.android.com/reference/android/telephony/CellSignalStrength.html). You will get access to both sets of information depending on what event triggered the change.
 * **Will this library work as a background process?** No. This library is **not** designed to be used while minimized. Because of its potential to consume large amounts of memory and CPU cycles it will only provide locations, by default, while the application is in the foreground and active.
 * **I got a plugin not supported error, what do I do?** If you get the following error `Plugin doesn't support this project's cordova-android version. cordova-android: 4.1.1, failed version requirement: >=5.0.0
 Skipping 'cordova-plugin-advanced-geolocation' for android`, then you most likely need to upgrade your version of cordova-android. You can explicitly upgrade by running the following command in your cordova project directory `cordova platform update android@5.0.0`. 
@@ -150,7 +157,7 @@ Skipping 'cordova-plugin-advanced-geolocation' for android`, then you most likel
 
 ## Sample Mapping App
 
-Included with the plugin is a sample demonstration mapping app called `sample-map.html`. To use it simply change the following line in your `config.xml` to point to the app's location, for example:
+Included with the plugin are two sample mapping apps called `sample-map.html` and `sample-leaflet-map.html`. To use it simply change the following line in your `config.xml` to point to the app's location, for example:
 
 ```javscript
 
@@ -172,7 +179,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 A copy of the license is available in the repository's [license.txt]( license.txt) file.
 
-[](Esri Tags: JavaScript HTML5 GPS Test ArcGIS Location Tools)
+[](Esri Tags: JavaScript HTML5 GPS Geolocation ArcGIS Location Tools Cordova PhoneGap)
 [](Esri Language: JavaScript)
 
 

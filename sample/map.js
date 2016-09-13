@@ -159,6 +159,10 @@ var app = {
                                 case "cell_location":
                                     console.log("cell_location JSON: " + data);
                                     break;
+
+                                case "signal_strength":
+                                    console.log("Signal strength JSON: " + data);
+                                    break;
                             }
                         }
                     }
@@ -185,7 +189,8 @@ var app = {
                     "useCache":true,
                     "satelliteData":true,
                     "buffer":true,
-                    "bufferSize":10
+                    "bufferSize":10,
+                    "signalStrength":false
                 });
             }; //init
         }); // require
