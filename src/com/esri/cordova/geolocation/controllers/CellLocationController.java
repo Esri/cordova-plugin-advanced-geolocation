@@ -157,7 +157,7 @@ public final class CellLocationController implements Runnable{
                         JSONHelper.errorJSON(CELLINFO_PROVIDER, ErrorMessages.FAILED_THREAD_INTERRUPT()));
             }
 
-            Log.d(TAG, "Stopping PhoneStateListener");
+            Log.d(TAG, "Stopping cell location listeners");
         }
     }
 
