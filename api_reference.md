@@ -287,9 +287,6 @@ More information can be derived from the Android SDK [source code](https://githu
 
 If you see any of the following in AndroidStudio debugger, they are default values and may indicate the device isn't reporting anything valid for those properties:         
 
-
-```javascript
-
 		// Default values
 		mGsmSignalStrength = 99;
         mGsmBitErrorRate = -1;
@@ -298,13 +295,10 @@ If you see any of the following in AndroidStudio debugger, they are default valu
         mEvdoDbm = -1;
         mEvdoEcio = -1;
         mEvdoSnr = -1;
-
         mLteSignalStrength = 99;
-```
+
         
 Example console.log:
-
-```javascript
 
 	// Contains invalid values
 	"cell_info JSON: 
@@ -321,9 +315,7 @@ Example console.log:
 			"gsmSignalStrength":11,
 			"level":3,
 			"isGSM":true
-			}"
-	
-```			
+			}"			
 
 Property | Type |  Value | Description
 --- | --- | --- | ---
@@ -370,8 +362,6 @@ If you see any values in AndroidStudio debugger that represent `Integer.MAX_VALU
 
 Example console.log:
 
-```javascript
-
 	// Contains invalid values
 	"cell_info JSON: 
 		{
@@ -389,14 +379,10 @@ Example console.log:
 			"dbm":-103,
 			"level":2
 			}
-		}"
-		
-```
+		}"				
 
 Example logcat:
-
-```javascript
-
+	
 	// Contains valid values
 	CellInfoWcdma:
 		{
@@ -415,8 +401,6 @@ Example logcat:
 			ss=10 
 			ber=99
 		}
-
-```
 
 Property | Type |  Value | Description
 --- | --- | --- | ---
