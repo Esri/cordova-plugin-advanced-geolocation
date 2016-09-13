@@ -7,7 +7,7 @@ This geolocation API is multi-threaded for maximum efficiency and reduced impact
 **IMPORTANT - READ THIS FIRST!** There are important differences between GPS Provider data, Network Provider data and Cellular data. It can be confusing. 
 
 * GPS Provider data is focused on providing a device location using latitude and longitude information via a GPS.
-* Network Provider data is focused on providing a device location using latitude and longitude via information from the cellular network.
+* Network Provider data is focused on providing a device location using latitude and longitude via information from the cellular network or WiFi.
 * Cellular data is focused on providing cell tower meta-data via information from the cellular network. It may or may not contain a lat/lon. More info below.
 
 ##Methods
