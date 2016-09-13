@@ -28,6 +28,11 @@ import android.telephony.CellInfoCdma;
 import android.telephony.CellInfoGsm;
 import android.telephony.CellInfoLte;
 import android.telephony.CellInfoWcdma;
+import android.telephony.CellSignalStrengthCdma;
+import android.telephony.CellSignalStrengthGsm;
+import android.telephony.CellSignalStrengthLte;
+import android.telephony.CellSignalStrengthWcdma;
+import android.telephony.SignalStrength;
 import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
@@ -47,6 +52,7 @@ public final class JSONHelper {
     public static final String SATELLITE_PROVIDER = "satellite";
     public static final String CELLINFO_PROVIDER = "cell_info";
     public static final String CELLLOCATION_PROVIDER = "cell_location";
+    private static final String SIGNAL_STRENGTH = "signal_strength";
     private static final String CDMA = "cdma";
     private static final String WCDMA = "wcdma";
     private static final String GSM = "gsm";
@@ -135,12 +141,41 @@ public final class JSONHelper {
         return json.toString();
     }
 
+    public static String signalStrengthJSON(SignalStrength signalStrength){
+        final Calendar calendar = Calendar.getInstance();
+        final JSONObject json = new JSONObject();
+
+        try {
+            json.put("provider", CELLINFO_PROVIDER);
+            json.put("type", SIGNAL_STRENGTH);
+            json.put("timestamp", calendar.getTimeInMillis());
+            json.put("cdmaDbm", signalStrength.getCdmaDbm());
+            json.put("cdmaEcio", signalStrength.getCdmaEcio());
+            json.put("evdoDbm", signalStrength.getEvdoDbm());
+            json.put("evdoEcio", signalStrength.getEvdoEcio());
+            json.put("evdoSnr", signalStrength.getEvdoSnr());
+            json.put("gsmBitErrorRate", signalStrength.getGsmBitErrorRate());
+            json.put("gsmSignalStrength", signalStrength.getGsmSignalStrength());
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                json.put("level", signalStrength.getLevel());
+            }
+
+            json.put("isGSM", signalStrength.isGsm());
+        }
+        catch(JSONException exc) {
+            logJSONException(exc);
+        }
+
+        return json.toString();
+    }
+
     /**
      * Converts CellInfoCdma into JSON
      * @param cellInfo CellInfoCdma
      * @return JSON
      */
-    public static String cellInfoCDMAJSON(CellInfoCdma cellInfo){
+    public static String cellInfoCDMAJSON(CellInfoCdma cellInfo, boolean returnSignalStrength){
 
         final Calendar calendar = Calendar.getInstance();
         final JSONObject json = new JSONObject();
@@ -158,6 +193,23 @@ public final class JSONHelper {
                 json.put("basestationId", identityCdma.getBasestationId());
                 json.put("networkId", identityCdma.getNetworkId());
                 json.put("systemId", identityCdma.getSystemId());
+
+                if (returnSignalStrength){
+                    final JSONObject jsonSignalStrength = new JSONObject();
+                    final CellSignalStrengthCdma cellSignalStrengthCdma = cellInfo.getCellSignalStrength();
+                    jsonSignalStrength.put("asuLevel", cellSignalStrengthCdma.getAsuLevel());
+                    jsonSignalStrength.put("cdmaDbm", cellSignalStrengthCdma.getCdmaDbm());
+                    jsonSignalStrength.put("cdmaEcio", cellSignalStrengthCdma.getCdmaEcio());
+                    jsonSignalStrength.put("cdmaLevel", cellSignalStrengthCdma.getCdmaLevel());
+                    jsonSignalStrength.put("dbm", cellSignalStrengthCdma.getDbm());
+                    jsonSignalStrength.put("evdoDbm", cellSignalStrengthCdma.getEvdoDbm());
+                    jsonSignalStrength.put("evdoEcio", cellSignalStrengthCdma.getEvdoEcio());
+                    jsonSignalStrength.put("evdoLevel", cellSignalStrengthCdma.getEvdoLevel());
+                    jsonSignalStrength.put("evdoSnr", cellSignalStrengthCdma.getEvdoSnr());
+                    jsonSignalStrength.put("level", cellSignalStrengthCdma.getLevel());
+
+                    json.put("cellSignalStrengthCdma", jsonSignalStrength);
+                }
             }
             catch(JSONException exc) {
                 logJSONException(exc);
@@ -175,7 +227,7 @@ public final class JSONHelper {
      * @param cellInfo CellInfoWcdma
      * @return JSON
      */
-    public static String cellInfoWCDMAJSON(CellInfoWcdma cellInfo){
+    public static String cellInfoWCDMAJSON(CellInfoWcdma cellInfo, boolean returnSignalStrength){
 
         final Calendar calendar = Calendar.getInstance();
         final JSONObject json = new JSONObject();
@@ -193,6 +245,16 @@ public final class JSONHelper {
                 json.put("mcc", identityWcdma.getMcc());
                 json.put("mnc", identityWcdma.getMnc());
                 json.put("psc", identityWcdma.getPsc());
+
+                if (returnSignalStrength){
+                    final JSONObject jsonSignalStrength = new JSONObject();
+                    final CellSignalStrengthWcdma cellSignalStrengthWcdma = cellInfo.getCellSignalStrength();
+                    jsonSignalStrength.put("asuLevel", cellSignalStrengthWcdma.getAsuLevel());
+                    jsonSignalStrength.put("dbm", cellSignalStrengthWcdma.getDbm());
+                    jsonSignalStrength.put("level", cellSignalStrengthWcdma.getLevel());
+
+                    json.put("cellSignalStrengthWcdma", jsonSignalStrength);
+                }
             }
             catch(JSONException exc) {
                 logJSONException(exc);
@@ -206,7 +268,7 @@ public final class JSONHelper {
      * @param cellInfo CellInfoGsm
      * @return JSON
      */
-    public static String cellInfoGSMJSON(CellInfoGsm cellInfo){
+    public static String cellInfoGSMJSON(CellInfoGsm cellInfo, boolean returnSignalStrength){
 
         final Calendar calendar = Calendar.getInstance();
         final JSONObject json = new JSONObject();
@@ -223,6 +285,16 @@ public final class JSONHelper {
                 json.put("lac", identityGsm.getLac());
                 json.put("mcc", identityGsm.getMcc());
                 json.put("mnc", identityGsm.getMnc());
+
+                if (returnSignalStrength){
+                    final JSONObject jsonSignalStrength = new JSONObject();
+                    final CellSignalStrengthGsm cellSignalStrengthGsm = cellInfo.getCellSignalStrength();
+                    jsonSignalStrength.put("asuLevel", cellSignalStrengthGsm.getAsuLevel());
+                    jsonSignalStrength.put("dbm", cellSignalStrengthGsm.getDbm());
+                    jsonSignalStrength.put("level", cellSignalStrengthGsm.getLevel());
+
+                    json.put("cellSignalStrengthGsm", jsonSignalStrength);
+                }
             }
             catch(JSONException exc) {
                 logJSONException(exc);
@@ -236,7 +308,7 @@ public final class JSONHelper {
      * @param cellInfo CellInfoLte
      * @return JSON
      */
-    public static String cellInfoLTEJSON(CellInfoLte cellInfo){
+    public static String cellInfoLTEJSON(CellInfoLte cellInfo, boolean returnSignalStrength){
 
         final Calendar calendar = Calendar.getInstance();
         final JSONObject json = new JSONObject();
@@ -254,6 +326,17 @@ public final class JSONHelper {
                 json.put("mnc", identityLte.getMnc());
                 json.put("pci", identityLte.getPci());
                 json.put("tac", identityLte.getTac());
+
+                if (returnSignalStrength){
+                    final JSONObject jsonSignalStrength = new JSONObject();
+                    final CellSignalStrengthLte cellSignalStrengthLte = cellInfo.getCellSignalStrength();
+                    jsonSignalStrength.put("asuLevel", cellSignalStrengthLte.getAsuLevel());
+                    jsonSignalStrength.put("dbm", cellSignalStrengthLte.getDbm());
+                    jsonSignalStrength.put("level", cellSignalStrengthLte.getLevel());
+                    jsonSignalStrength.put("timingAdvance", cellSignalStrengthLte.getTimingAdvance());
+
+                    json.put("cellSignalStrengthLte", jsonSignalStrength);
+                }
             }
             catch(JSONException exc) {
                 logJSONException(exc);

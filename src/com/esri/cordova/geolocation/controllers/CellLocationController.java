@@ -38,11 +38,14 @@ import android.telephony.CellInfoLte;
 import android.telephony.CellInfoWcdma;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
+import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 
+import com.esri.cordova.geolocation.listeners.SignalStrengthListener;
+import com.esri.cordova.geolocation.model.StrengthChange;
 import com.esri.cordova.geolocation.utils.ErrorMessages;
 import com.esri.cordova.geolocation.utils.JSONHelper;
 
@@ -59,17 +62,21 @@ public final class CellLocationController implements Runnable{
     private static CallbackContext _callbackContext; // Threadsafe
     private static TelephonyManager _telephonyManager = null;
     private static PhoneStateListener _phoneStateListener = null;
+    private static SignalStrengthListener _signalStrengthListener = null;
     private static CordovaInterface _cordova;
     private static boolean _isConnected = false;
+    private static boolean _returnSignalStrength = false;
 
     public CellLocationController(
             boolean isConnected,
+            boolean returnSignalStrength,
             CordovaInterface cordova,
             CallbackContext callbackContext
     ){
         _isConnected = isConnected;
         _cordova = cordova;
         _callbackContext = callbackContext;
+        _returnSignalStrength = returnSignalStrength;
     }
 
     public void run(){
@@ -136,7 +143,9 @@ public final class CellLocationController implements Runnable{
 
         if(_phoneStateListener != null && _telephonyManager != null){
             _telephonyManager.listen(_phoneStateListener, PhoneStateListener.LISTEN_NONE);
+            _telephonyManager.listen(_signalStrengthListener, PhoneStateListener.LISTEN_NONE);
             _phoneStateListener = null;
+            _signalStrengthListener = null;
             _telephonyManager = null;
 
             try {
@@ -148,7 +157,7 @@ public final class CellLocationController implements Runnable{
                         JSONHelper.errorJSON(CELLINFO_PROVIDER, ErrorMessages.FAILED_THREAD_INTERRUPT()));
             }
 
-            Log.d(TAG, "Stopping PhoneStateListener");
+            Log.d(TAG, "Stopping cell location listeners");
         }
     }
 
@@ -168,6 +177,25 @@ public final class CellLocationController implements Runnable{
     }
 
     private void setPhoneStateListener(){
+
+        if(_returnSignalStrength){
+            _signalStrengthListener = new SignalStrengthListener();
+            _signalStrengthListener.setListener(new StrengthChange() {
+                @Override
+                public SignalStrength onSignalStrengthChanged(SignalStrength signalStrength) {
+
+                    if(!Thread.currentThread().isInterrupted()){
+                        sendCallback(PluginResult.Status.OK,
+                                JSONHelper.signalStrengthJSON(signalStrength));
+                    }
+
+                    return null;
+                }
+            });
+
+            _telephonyManager.listen(_signalStrengthListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        }
+
         _phoneStateListener = new PhoneStateListener(){
             @Override
             public void onCellLocationChanged(CellLocation location){
@@ -185,6 +213,13 @@ public final class CellLocationController implements Runnable{
                     }
                 }
             }
+
+            @Override
+            public void onCellInfoChanged(List<CellInfo> cellInfo){
+                if(!Thread.currentThread().isInterrupted()){
+                    processCellInfos(cellInfo);
+                }
+            }
         };
 
         _telephonyManager.listen(_phoneStateListener, PhoneStateListener.LISTEN_CELL_LOCATION);
@@ -198,22 +233,22 @@ public final class CellLocationController implements Runnable{
                 if(cellInfo instanceof  CellInfoWcdma){
                     final CellInfoWcdma cellInfoWcdma = (CellInfoWcdma) cellInfo;
                     sendCallback(PluginResult.Status.OK,
-                            JSONHelper.cellInfoWCDMAJSON(cellInfoWcdma));
+                            JSONHelper.cellInfoWCDMAJSON(cellInfoWcdma, _returnSignalStrength));
                 }
                 if(cellInfo instanceof CellInfoGsm){
                     final CellInfoGsm cellInfoGsm = (CellInfoGsm) cellInfo;
                     sendCallback(PluginResult.Status.OK,
-                            JSONHelper.cellInfoGSMJSON(cellInfoGsm));
+                            JSONHelper.cellInfoGSMJSON(cellInfoGsm, _returnSignalStrength));
                 }
                 if(cellInfo instanceof  CellInfoCdma){
                     final CellInfoCdma cellIdentityCdma = (CellInfoCdma) cellInfo;
                     sendCallback(PluginResult.Status.OK,
-                            JSONHelper.cellInfoCDMAJSON(cellIdentityCdma));
+                            JSONHelper.cellInfoCDMAJSON(cellIdentityCdma, _returnSignalStrength));
                 }
                 if(cellInfo instanceof  CellInfoLte){
                     final CellInfoLte cellInfoLte = (CellInfoLte) cellInfo;
                     sendCallback(PluginResult.Status.OK,
-                            JSONHelper.cellInfoLTEJSON(cellInfoLte));
+                            JSONHelper.cellInfoLTEJSON(cellInfoLte, _returnSignalStrength));
                 }
 
                 Log.d(TAG,cellInfo.toString());
@@ -252,5 +287,4 @@ public final class CellLocationController implements Runnable{
             _callbackContext.sendPluginResult(result);
         }
     }
-
 }

@@ -72,6 +72,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
     private static boolean _useCache;
     private static boolean _returnSatelliteData = false;
     private static boolean _buffer = false;
+    private static boolean _signalStrength = false;
     private static int _bufferSize = 0;
 
     private static GPSController _gpsController = null;
@@ -255,7 +256,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
                 cellDataNotAllowed();
             }
             else {
-                _cellLocationController = new CellLocationController(networkEnabled,_cordova,_callbackContext);
+                _cellLocationController = new CellLocationController(networkEnabled, _signalStrength, _cordova,_callbackContext);
                 threadPool.execute(_cellLocationController);
             }
         }
@@ -287,7 +288,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
                 cellDataNotAllowed();
             }
             else {
-                _cellLocationController = new CellLocationController(networkEnabled,_cordova,_callbackContext);
+                _cellLocationController = new CellLocationController(networkEnabled,_signalStrength ,_cordova,_callbackContext);
                 threadPool.execute(_cellLocationController);
             }
         }
@@ -515,6 +516,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
                 _useCache = obj.getBoolean("useCache");
                 _returnSatelliteData = obj.getBoolean("satelliteData");
                 _buffer = obj.getBoolean("buffer");
+                _signalStrength = obj.getBoolean("signalStrength");
                 _bufferSize = obj.getInt("bufferSize");
 
             }

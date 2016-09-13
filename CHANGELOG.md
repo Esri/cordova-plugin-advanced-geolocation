@@ -1,6 +1,12 @@
 # cordova-plugin-advanced-geolocation - Changelog
 
-## Version 1.2 - September 11, 2016
+## Version 1.3.0 - September 13, 2016
+Has breaking changes. An additional configuration option is now required.
+
+**Enhancements**
+* Closes #31 - adds signal strength support via configuration options. Supported types include Lte, GSM, WCDMA and CDMA devices.
+
+## Version 1.2.0 - September 11, 2016
 No breaking changes.
 
 **Enhancements**
