@@ -1,7 +1,7 @@
 {
   "name": "cordova-plugin-advanced-geolocation",
-  "version": "1.3.0",
-  "description": "Android geolocation plugin for both GPS and NETWORK-based location providers. Also can return satellite info, cell info and cell signal strength.",
+  "version": "1.3.1",
+  "description": "Android geolocation plugin for both GPS and NETWORK-based location providers. Also can return satellite info, cellular info and cellular network signal strength.",
   "cordova": {
     "id": "cordova-plugin-advanced-geolocation",
     "platforms": [
@@ -19,6 +19,8 @@
     "satellite",
     "network",
     "cellular",
+    "triangulation",
+    "signal-strength",
     "ecosystem:cordova",
     "cordova-android",
     "cordova",

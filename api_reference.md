@@ -300,10 +300,10 @@ If you see any of the following in AndroidStudio debugger, they are default valu
         
 Example console.log:
 
-	// Contains invalid values
-	"cell_info JSON: 
+	// Contains both invalid and valid values
+	"Signal Strength JSON: 
 			{
-			"provider":"cell_info",
+			"provider":"signal_strength",
 			"type":"signal_strength",			
 			"timestamp":1473784636478,
 			"cdmaDbm":-120,
@@ -319,7 +319,7 @@ Example console.log:
 
 Property | Type |  Value | Description
 --- | --- | --- | ---
-`provider` | String | `cell_location` | Let's you determine where this data is coming from.
+`provider` | String | `signal_strength` | Let's you determine where this data is coming from.
 `type` | String | `signal_strength` | Depends on the device, cell service provider and how many radios are active. It can return multiple values.
 `timestamp` | number | milliseconds | Time right now based on the Calendar whose locale is determined by system settings. Gregorian calendar assumes counting begins at the start of the epoch: i.e., YEAR = 1970, MONTH = JANUARY, DATE = 1, etc. For more info see [java.util.Calendar](http://developer.android.com/reference/java/util/Calendar.html).
 `cdmaDbm` | integer | ? | CDMA RSSI value in dBm.  
@@ -334,6 +334,8 @@ Property | Type |  Value | Description
 ## cellSignalStrengthCdma
 
 This information is provided when a change is detected in the `CellInfoCdma` data and the JavaScript application has specified the `signalStrength` option as `true`.
+
+This information will be returned as part of the `cell_info` payload.
 
 More information can be derived from the Android SDK [source code](https://github.com/android/platform_frameworks_base/blob/master/telephony/java/android/telephony/CellSignalStrengthCdma.java).
 
@@ -355,6 +357,8 @@ Property | Type |  Value | Description
 ## cellSignalStrengthWcdma
 
 This information is provided when a change is detected in the `CellInfoWcdma` data and the JavaScript application has specified the `signalStrength` option as `true`.
+
+This information will be returned as part of the `cell_info` payload.
 
 More information can be derived from the Android SDK [source code](https://github.com/android/platform_frameworks_base/blob/master/telephony/java/android/telephony/CellSignalStrengthWcdma.java).
 
@@ -413,6 +417,8 @@ Property | Type |  Value | Description
 
 This information is provided when a change is detected in the `CellInfoGsm` data and the JavaScript application has specified the `signalStrength` option as `true`.
 
+This information will be returned as part of the `cell_info` payload.
+
 More information can be derived from the Android SDK [source code](https://github.com/android/platform_frameworks_base/blob/master/telephony/java/android/telephony/CellSignalStrengthGsm.java).
 
 If you see any values in AndroidStudio debugger that represent `Integer.MAX_VALUE`, for example `dBm = 2147483647`, then most likely the device isn't reporting anything valid for that property.
@@ -426,6 +432,8 @@ Property | Type |  Value | Description
 ## cellSignalStrengthLte
 
 This information is provided when a change is detected in the `CellInfoLte` data and the JavaScript application has specified the `signalStrength` option as `true`.
+
+This information will be returned as part of the `cell_info` payload.
 
 More information can be derived from the Android SDK [source code](https://github.com/android/platform_frameworks_base/blob/master/telephony/java/android/telephony/CellSignalStrengthLte.java).
 
