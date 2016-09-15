@@ -141,12 +141,17 @@ public final class JSONHelper {
         return json.toString();
     }
 
+    /**
+     * Originates from a change in signal strength
+     * @param signalStrength SignalStrength
+     * @return JSON
+     */
     public static String signalStrengthJSON(SignalStrength signalStrength){
         final Calendar calendar = Calendar.getInstance();
         final JSONObject json = new JSONObject();
 
         try {
-            json.put("provider", CELLINFO_PROVIDER);
+            json.put("provider", SIGNAL_STRENGTH); // Yep provider and type are same values
             json.put("type", SIGNAL_STRENGTH);
             json.put("timestamp", calendar.getTimeInMillis());
             json.put("cdmaDbm", signalStrength.getCdmaDbm());
