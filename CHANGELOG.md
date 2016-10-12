@@ -1,5 +1,13 @@
 # cordova-plugin-advanced-geolocation - Changelog
 
+## Version 1.3.2 - October 12, 2016
+
+No breaking changes.
+
+**Enhancements**
+* Closes #33 - removed old code comment.
+* Closes #37 - missing reference in plugin.xml.
+
 ## Version 1.3.1 - September 15, 2016
 
 No breaking changes.
