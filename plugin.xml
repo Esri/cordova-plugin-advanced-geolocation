@@ -63,6 +63,7 @@
         <source-file src="src/com/esri/cordova/geolocation/model/Error.java" target-dir="src/com/esri/cordova/geolocation/model" />        
         
         <source-file src="src/com/esri/cordova/geolocation/utils/JSONHelper.java" target-dir="src/com/esri/cordova/geolocation/utils" />
+        <source-file src="src/com/esri/cordova/geolocation/utils/ErrorMessages.java" target-dir="src/com/esri/cordova/geolocation/utils" />
         <source-file src="src/com/esri/cordova/geolocation/utils/GeodataHelper.java" target-dir="src/com/esri/cordova/geolocation/utils" />
 
         <js-module src="www/AdvancedGeolocation.js" name="AdvancedGeolocation">
