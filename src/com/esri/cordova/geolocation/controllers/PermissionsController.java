@@ -25,7 +25,7 @@ import org.apache.cordova.CordovaInterface;
 
 public class PermissionsController {
 
-    private static Activity _activity;
+    private Activity _activity;
     private static CordovaInterface _cordovaInterface;
     private static int _denyCounter = 0;
     private static final String TAG = "GeolocationPlugin";

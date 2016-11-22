@@ -79,10 +79,10 @@ public class AdvancedGeolocation extends CordovaPlugin{
     private static NetworkLocationController _networkLocationController = null;
     private static CellLocationController _cellLocationController = null;
     private static CordovaInterface _cordova;
-    private static Activity _cordovaActivity;
+    private Activity _cordovaActivity;
     private static CallbackContext _callbackContext;
     private static SharedPreferences _sharedPreferences;
-    private static PermissionsController _permissionsController;
+    private PermissionsController _permissionsController;
 
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
