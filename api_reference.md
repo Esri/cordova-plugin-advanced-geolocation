@@ -11,11 +11,47 @@ This geolocation API is multi-threaded for maximum efficiency and reduced impact
 * Cellular data is focused on providing cell tower meta-data via information from the cellular network. It may or may not contain a lat/lon. More info below.
 
 ##Methods
-Method | Description
---- | ---
-`start` | Starts any location providers that were specified in the configuration options. 
-`stop` | Stops all location processes. This will also automatically occur when the app is placed in the background. The app will continue to consume memory.
-`kill` | Shuts down all location activities, stops all threads and destroys the application instance. Can be used to hard stop a runaway GPS process, for example, or to simply close the application and stop all processes.
+Method | Returns | Description
+--- | --- | ---
+`start` | callback | Starts any location providers that were specified in the configuration options. 
+`stop` | callback | Stops all location processes. This will also automatically occur when the app is placed in the background. The app will continue to consume memory.
+`kill` | callback | Shuts down all location activities, stops all threads and destroys the application instance. Can be used to hard stop a runaway GPS process, for example, or to simply close the application and stop all processes.
+
+##Method Callback Signatures
+
+### `stop()`
+
+The `stop()` method attempts to gracefully stop all location providers that have been enabled in the configuration options. It provides both success and error callbacks. The error callbacks originate from their designated location provider. The success callback looks like this:
+
+```javascript
+
+    {
+        "stopLocation":[
+            {"provider":"gps","success":true},
+            {"provider":"network","success":true},
+            {"provider":"cell","success":true}
+        ]
+    }
+
+```
+
+### `kill()`
+
+The `kill()` method attempts to forcefully stop all location providers that have been enabled in the configuration options. It also attempts to terminate the Cordova threadpool.
+
+The error callbacks originate from their designated location provider. The success callback looks like this:
+
+```javascript
+
+    {
+    	"success": true
+    }
+
+```
+
+### `start()`
+
+The documentation below provides details on the JSON data provided in the `start()` callback.
 
 ##Configuration Options (Required)
 
