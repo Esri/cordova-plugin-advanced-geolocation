@@ -1,5 +1,15 @@
 # cordova-plugin-advanced-geolocation - Changelog
 
+## Version 1.4 - November 22, 2016
+Possible breaking changes.
+
+**Enhancements**
+* Closes #40 - provide success callback(s) for stop() and kill(). 
+
+**Bug Fixes**
+* Closes #41 - removes memory leaks created by improper method modifiers
+* Implements a cancelable Future that is returned from the ExecutureService.submit() method. The submit() method replaced the old execute(Runnable) method.
+
 ## Version 1.3.2 - October 12, 2016
 
 No breaking changes.

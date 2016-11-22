@@ -38,11 +38,14 @@ import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 
 import com.esri.cordova.geolocation.model.Error;
+import com.esri.cordova.geolocation.model.StopLocation;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Threadsafe class for converting location data into JSON
@@ -58,6 +61,52 @@ public final class JSONHelper {
     private static final String GSM = "gsm";
     private static final String LTE = "lte";
     private static final String TAG = "GeolocationPlugin";
+
+    /**
+     * Attempt to gracefully stop all available location providers.
+     * Be sure to also check for error events.
+     * @return A JSONObject containing an array that lists each provider and boolean indicating
+     * whether or not the stop location attempt was successful.
+     */
+    public static String stopLocationJSON(List<StopLocation> stopLocation) {
+        final JSONArray jsonArray = new JSONArray();
+        final JSONObject stopLocationDetails = new JSONObject();
+
+        try {
+
+            for (int i = 0; i < stopLocation.size(); i++){
+                final JSONObject json = new JSONObject();
+                json.put("provider", stopLocation.get(i).provider);
+                json.put("success", stopLocation.get(i).success);
+                jsonArray.put(json);
+            }
+
+            stopLocationDetails.put("stopLocation", jsonArray);
+        }
+        catch( JSONException exc) {
+            logJSONException(exc);
+        }
+
+        return stopLocationDetails.toString();
+    }
+
+    /**
+     * Attempt to forcefully shutdown a location provider.
+     * Be sure to also check for error events.
+     * @return JSONObject that indicates kill request was successful.
+     */
+    public static String killLocationJSON() {
+        final JSONObject json = new JSONObject();
+
+        try {
+            json.put("success", "true");
+        }
+        catch( JSONException exc) {
+            logJSONException(exc);
+        }
+
+        return json.toString();
+    }
 
     /**
      * Converts location data into a JSON form that can be consumed within a JavaScript application
