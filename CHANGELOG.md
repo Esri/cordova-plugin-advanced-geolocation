@@ -1,5 +1,12 @@
 # cordova-plugin-advanced-geolocation - Changelog
 
+## Version 1.5 - December 9, 2016
+No breaking changes.
+
+**Bug Fixes**
+* Closes #43 - Plugin fails to build on Ionic. Include StopLocation Class in plugin.xml
+
+
 ## Version 1.4 - November 22, 2016
 Possible breaking changes.
 
