@@ -1,4 +1,4 @@
-#cordova-plugin-advanced-geolocation (Android-only)
+# cordova-plugin-advanced-geolocation (Android-only)
 
 Highly configurable native interface to [GPS](http://developer.android.com/reference/android/location/LocationManager.html#GPS_PROVIDER) and [NETWORK](http://developer.android.com/reference/android/location/LocationManager.html#NETWORK_PROVIDER) on-device [location providers](http://developer.android.com/reference/android/location/LocationProvider.html). It will return and identify any location data registered by the on-device providers including real-time [satellite info](http://developer.android.com/reference/android/location/GpsSatellite.html).
 
@@ -10,7 +10,7 @@ If you are experiencing annoying jumping around of your geolocation coordinates 
 
 This plugin is available via [npm](https://www.npmjs.com/package/cordova-plugin-advanced-geolocation).
 
-##Supported Platforms
+## Supported Platforms
 
 **Android-only.** This plugin is designed for Android versions between Android 5.0.0 (Lollipop / API Level 21) and Android 6.x (Marshmallow / API Level 23). 
 
@@ -18,7 +18,7 @@ This plugin is available via [npm](https://www.npmjs.com/package/cordova-plugin-
 
 Cordova supports the following android [releases](https://github.com/apache/cordova-android/releases).
 
-##Quick Start!
+## Quick Start!
 
 Here are the cliff notes for getting started. More details on the Cordova CLI can be found [here](https://cordova.apache.org/docs/en/latest/guide/cli/index.html).
 
@@ -38,7 +38,7 @@ In `config.xml` modify the `src` to either ` <content src="sample-map.html" />` 
 
 Plug in your phone and run: `cordova run android`, or in Android Studio select `^D`.
 
-##IMPORTANT!
+## IMPORTANT!
 
 This API does **NOT** conform to the coding patterns described in the W3C Geolocation API Specification. 
 
@@ -52,12 +52,12 @@ If your requirements specifically call for less than 3 meter accuracy then consi
 
 **PRIVACY WARNING** Keep in mind the [W3C security and privacy considerations](http://dev.w3.org/geo/api/spec-source.html#security). This plugin uses native geolocation functionality only. Users will not automatically see a W3C Geolocation prompt, they will only get native Android prompts. The plugin requires the following Android User Permissions: [ACCESS_COARSE_LOCATION](http://developer.android.com/reference/android/Manifest.permission.html#ACCESS_COARSE_LOCATION), [ACCESS_FINE_LOCATION](http://developer.android.com/reference/android/Manifest.permission.html#ACCESS_FINE_LOCATION), [ACCESS_NETWORK_STATE](http://developer.android.com/reference/android/Manifest.permission.html#ACCESS_NETWORK_STATE), [ACCESS_WIFI_STATE](http://developer.android.com/reference/android/Manifest.permission.html#ACCESS_WIFI_STATE) and [INTERNET](http://developer.android.com/reference/android/Manifest.permission.html#INTERNET).
 
-#API Reference
+# API Reference
 
 Click [here](api_reference.md) to read all about it.
 
 
-##Example Usage
+## Example Usage
 
 ```javaScript
     
@@ -122,7 +122,7 @@ Click [here](api_reference.md) to read all about it.
 
 ```
 
-##Use Cases
+## Use Cases
 
 Here are example use cases for the different ways location providers can be set in the configuration options via the `providers` attribute:
 
@@ -133,7 +133,7 @@ Here are example use cases for the different ways location providers can be set 
 * **`"some"`** Activates only GPS and Network providers. Allows you to take advantage of network providers to establish initial location and then use GPS to finalize a more accurate location. Typically the device will provide the network location first before the GPS warms up. After the GPS warms up, and if the accuracy is good enough for your requirements, then you would switch to using the GPS locations.
 
 
-##Geolocation Data Description
+## Geolocation Data Description
 
 The following geolocation data may be exposed and accessible by this API if the on-device provider is available and enabled:
 * Real-time GPS location
@@ -167,9 +167,9 @@ Included with the plugin are two sample mapping apps called `sample-map.html` an
 
 ![Sample Mapping App](sample_mapping_app.png)
 
-##Licensing
+## Licensing
 
-Copyright 2016 Esri
+Copyright 2017 Esri
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
