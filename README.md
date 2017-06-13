@@ -14,7 +14,7 @@ This plugin is available via [npm](https://www.npmjs.com/package/cordova-plugin-
 
 **Android-only.** This plugin is designed for Android versions between Android 5.0.0 (Lollipop / API Level 21) and Android 6.x (Marshmallow / API Level 23). 
 
-**IMPORTANT** At Android N (OS version 7) there have been many changes to how GPS is implemented that are not compatible with the current version of this library. See the [issues](https://github.com/Esri/cordova-plugin-advanced-geolocation/issues) list for the most current information.
+**IMPORTANT** This library hasn't been tested on Android N (OS version 7). There may be changes to how GPS is implemented that are not compatible with the current version of this library. See the [issues](https://github.com/Esri/cordova-plugin-advanced-geolocation/issues) list for the most current information.
 
 Cordova supports the following android [releases](https://github.com/apache/cordova-android/releases).
 
@@ -28,7 +28,9 @@ Here are the cliff notes for getting started. More details on the Cordova CLI ca
 
 `cordova platform add android`
 
-`cordova platform update android@5.0.0` [choose 5.0.0 or higher]
+If you are running the latest version of Cordova you don't need to run `update`:
+
+`cordova platform update android@5.0.0` [choose 5.0.0 or higher] 
 
 `cordova plugin add https://github.com/esri/cordova-plugin-advanced-geolocation.git`
 
