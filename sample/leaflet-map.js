@@ -16,7 +16,7 @@ var app = {
 
         // Reference: https://github.com/pointhi/leaflet-color-markers
         var greenIcon = new L.Icon({
-            iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
             iconSize: [25, 41],
             iconAnchor: [12, 41],
@@ -25,7 +25,7 @@ var app = {
         });
 
         var blueIcon = new L.Icon({
-            iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
             iconSize: [25, 41],
             iconAnchor: [12, 41],
@@ -53,6 +53,12 @@ var app = {
             else {
                 L.marker([lat, lon], {icon: blueIcon}).addTo(map);
             }
+        }
+
+        function addLocationData(type, json){
+            locationDiv.innerHTML = type + " Lat: " + Number(json.latitude).toFixed(4) +
+                ", Lon: " +  Number(json.longitude).toFixed(4) +
+                ", Acc: " + Number(json.accuracy).toFixed(4);
         }
 
         function addSatelliteData(json){
@@ -96,8 +102,10 @@ var app = {
                     switch(jsonObject.provider){
                         case "gps":
                             if(jsonObject.latitude != "0.0"){
+                                addLocationData("GPS", jsonObject);
                                 console.log("GPS location detected - lat:" +
-                                    jsonObject.latitude + ", lon: " + jsonObject.longitude);
+                                    jsonObject.latitude + ", lon: " + jsonObject.longitude +
+                                    ", accuracy: " + jsonObject.accuracy);
                                 map.panTo(new L.LatLng(jsonObject.latitude, jsonObject.longitude))
                                 addGraphic( "green", jsonObject.latitude, jsonObject.longitude);
                             }
@@ -105,8 +113,10 @@ var app = {
 
                         case "network":
                             if(jsonObject.latitude != "0.0"){
+                                addLocationData("Network", jsonObject);
                                 console.log("Network location detected - lat:" +
-                                    jsonObject.latitude + ", lon: " + jsonObject.longitude);
+                                    jsonObject.latitude + ", lon: " + jsonObject.longitude +
+                                    ", accuracy: " + jsonObject.accuracy);
                                 map.panTo(new L.LatLng(jsonObject.latitude, jsonObject.longitude))
                                 addGraphic( "blue", jsonObject.latitude, jsonObject.longitude);
                             }
