@@ -1,5 +1,13 @@
 # cordova-plugin-advanced-geolocation - Changelog
 
+## Version 1.6 - June 28, 2017
+No breaking changes.
+
+**Enhancements**
+* Adds accuracy info to the console when running samples.
+* Adds location data output to the screen when running samples.
+* Fixed a minor CSP bug in Esri-leaflet sample
+
 ## Version 1.5 - December 9, 2016
 No breaking changes.
 

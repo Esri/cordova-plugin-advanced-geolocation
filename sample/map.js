@@ -83,6 +83,12 @@ var app = {
                 })
             }
 
+            function addLocationData(type, json){
+                locationDiv.innerHTML = type + " Lat: " + Number(json.latitude).toFixed(4) +
+                    ", Lon: " +  Number(json.longitude).toFixed(4) +
+                    ", Acc: " + Number(json.accuracy).toFixed(4);
+            }
+
             function addSatelliteData(json){
 
                 var date = new Date(parseInt(json["timestamp"]));
@@ -128,8 +134,10 @@ var app = {
                             switch(jsonObject.provider){
                                 case "gps":
                                     if(jsonObject.latitude != "0.0"){
+                                        addLocationData("GPS", jsonObject);
                                         console.log("GPS location detected - lat:" +
-                                            jsonObject.latitude + ", lon: " + jsonObject.longitude);
+                                            jsonObject.latitude + ", lon: " + jsonObject.longitude +
+                                            ", accuracy: " + jsonObject.accuracy);
                                         var point = new Point(jsonObject.longitude, jsonObject.latitude);
                                         map.centerAt(point);
                                         addGraphic( greenGPSSymbol, point);
@@ -138,8 +146,10 @@ var app = {
 
                                 case "network":
                                     if(jsonObject.latitude != "0.0"){
+                                        addLocationData("Network", jsonObject);
                                         console.log("Network location detected - lat:" +
-                                            jsonObject.latitude + ", lon: " + jsonObject.longitude);
+                                            jsonObject.latitude + ", lon: " + jsonObject.longitude +
+                                            ", accuracy: " + jsonObject.accuracy);
                                         var point = new Point(jsonObject.longitude, jsonObject.latitude);
                                         map.centerAt(point);
                                         addGraphic( blueNetworkSymbol, point);
