@@ -1,4 +1,4 @@
-#API Reference
+# API Reference
 
 This geolocation API is multi-threaded for maximum efficiency and reduced impact on user experience.
 
@@ -10,14 +10,14 @@ This geolocation API is multi-threaded for maximum efficiency and reduced impact
 * Network Provider data is focused on providing a device location using latitude and longitude via information from the cellular network or WiFi.
 * Cellular data is focused on providing cell tower meta-data via information from the cellular network. It may or may not contain a lat/lon. More info below.
 
-##Methods
+## Methods
 Method | Returns | Description
 --- | --- | ---
 `start` | callback | Starts any location providers that were specified in the configuration options. 
 `stop` | callback | Stops all location processes. This will also automatically occur when the app is placed in the background. The app will continue to consume memory.
 `kill` | callback | Shuts down all location activities, stops all threads and destroys the application instance. Can be used to hard stop a runaway GPS process, for example, or to simply close the application and stop all processes.
 
-##Method Callback Signatures
+## Method Callback Signatures
 
 ### `stop()`
 
@@ -53,7 +53,7 @@ The error callbacks originate from their designated location provider. The succe
 
 The documentation below provides details on the JSON data provided in the `start()` callback.
 
-##Configuration Options (Required)
+## Configuration Options (Required)
 
 Option | Type | Description
 --- | --- | ---
@@ -144,7 +144,7 @@ Property | Type |  Value | Description
 `bufferedLongitude` | String | number | The buffer's geometric longitudinal center. Value is longitude in degrees. 
 `bufferedAccuracy` | String | number | The buffer's average horizontal accuracy in meters. It may be possible to have a buffered accuracy equal to `0.0`.
 
-##Satellite Data
+## Satellite Data
 
 If you have the Configuration option `satelliteData` to `true`, then for each satellite detected by the GPS the following data will be returned as JSON in the callback. This section provides a description of the attribute/value pairs that are returned. 
 
@@ -166,7 +166,7 @@ number | String | number | Each satellite is assigned a sequential number for as
 `hasAlmanac` | String | boolean | Returns true if the GPS engine has almanac data for the satellite. 
 `SNR` | String | number | Returns the signal to noise ratio for the satellite.  
 
-# Cellular Data
+## Cellular Data
 
 If you have the `providers` Configuration option set to `cell` or `all` then this API will attempt to retrieve low-level data about the cellular service.
 
@@ -234,7 +234,7 @@ Examples:
 ```
 
 
-##cell_info CDMA Data
+## cell_info CDMA Data
 
 Property | Type |  Value | Description
 --- | --- | --- | ---
@@ -286,7 +286,7 @@ Property | Type |  Value | Description
 `mnc` | integer | 0 - 999 | 3-digit Mobile Network Code. Integer.MAX_VALUE if unknown.
 `psc` | integer | 0 - 511 | 9-bit UMTS Primary Scrambling Code described in TS 25.331. Integer.MAX_VALUE if unknown.
 
-##cell_location CDMA Data
+## cell_location CDMA Data
 
 Property | Type |  Value | Description
 --- | --- | --- | ---
