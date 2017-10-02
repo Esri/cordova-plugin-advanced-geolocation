@@ -117,7 +117,7 @@ Click [here](api_reference.md) to read all about it.
         "useCache":true,       // Return GPS and NETWORK cached locations
         "satelliteData":false, // Return of GPS satellite info
         "buffer":false,        // Buffer location data
-        "bufferSize":0         // Max elements in buffer
+        "bufferSize":0,        // Max elements in buffer
         "signalStrength":false // Return cell signal strength data
     });
 
