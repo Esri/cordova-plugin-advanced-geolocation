@@ -1,5 +1,11 @@
 # cordova-plugin-advanced-geolocation - Changelog
 
+## Version 1.6.1 - October 2, 2017
+No breaking changes.
+
+**Enhancements**
+* Minor documentation clarification on Android SDK support
+
 ## Version 1.6 - June 28, 2017
 No breaking changes.
 
