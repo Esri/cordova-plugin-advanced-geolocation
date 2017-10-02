@@ -2,8 +2,6 @@
 
 This geolocation API is multi-threaded for maximum efficiency and reduced impact on user experience.
 
-**Reminder** This project currently only supports API Level 21 to API Level 23. Android N (API 24) brings breaking changes in terms of how GPS is implemented. Be sure to set the `minSdkVersion` in the AndroidManifest, for example: `<uses-sdk android:minSdkVersion="21" android:targetSdkVersion="22" />`
-
 **IMPORTANT - READ THIS FIRST!** There are important differences between GPS Provider data, Network Provider data and Cellular data. It can be confusing. 
 
 * GPS Provider data is focused on providing a device location using latitude and longitude information via a GPS.
