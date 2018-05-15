@@ -1,5 +1,11 @@
 # cordova-plugin-advanced-geolocation - Changelog
 
+## Version 1.6.2 - May 15, 2018
+No breaking changes.
+
+**Enhancements**
+* Fixes NullPointerException errors when stopping listeners on the TelephonyManager.
+
 ## Version 1.6.1 - October 2, 2017
 No breaking changes.
 
