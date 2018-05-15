@@ -136,25 +136,28 @@ public final class CellLocationController implements Runnable{
      * Full stop using brute force. Works with many Android versions.
      */
     public void stopLocation(){
-
         if(_phoneStateListener != null && _telephonyManager != null){
             _telephonyManager.listen(_phoneStateListener, PhoneStateListener.LISTEN_NONE);
-            _telephonyManager.listen(_signalStrengthListener, PhoneStateListener.LISTEN_NONE);
-            _phoneStateListener = null;
-            _signalStrengthListener = null;
-            _telephonyManager = null;
-
-            try {
-                Thread.currentThread().interrupt();
-            }
-            catch(SecurityException exc){
-                Log.e(TAG, exc.getMessage());
-                sendCallback(PluginResult.Status.ERROR,
-                        JSONHelper.errorJSON(CELLINFO_PROVIDER, ErrorMessages.FAILED_THREAD_INTERRUPT()));
-            }
-
-            Log.d(TAG, "Stopping cell location listeners");
         }
+
+        if(_signalStrengthListener != null && _telephonyManager != null){
+            _telephonyManager.listen(_signalStrengthListener, PhoneStateListener.LISTEN_NONE);
+        }
+
+        _signalStrengthListener = null;
+        _phoneStateListener = null;
+        _telephonyManager = null;
+
+        try {
+            Thread.currentThread().interrupt();
+        }
+        catch(SecurityException exc){
+            Log.e(TAG, exc.getMessage());
+            sendCallback(PluginResult.Status.ERROR,
+                    JSONHelper.errorJSON(CELLINFO_PROVIDER, ErrorMessages.FAILED_THREAD_INTERRUPT()));
+        }
+
+        Log.d(TAG, "Stopping cell location listeners");
     }
 
     /**
