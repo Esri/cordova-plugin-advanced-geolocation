@@ -430,7 +430,7 @@ public class AdvancedGeolocation extends CordovaPlugin{
 
     public void onPause(boolean multitasking){
         Log.d(TAG, "onPause");
-        stopLocation();
+       // stopLocation();
     }
 
     public void onStop(){
